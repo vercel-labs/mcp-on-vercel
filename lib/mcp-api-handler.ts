@@ -217,10 +217,6 @@ export function initializeMcpApiHandler(
         clearTimeout(timeout);
         await redis.unsubscribe(`responses:${sessionId}:${requestId}`);
       });
-    } else if (url.pathname === "/") {
-    } else if (url.pathname === "/") {
-      res.statusCode = 200;
-      res.end("Hello, world!");
     } else {
       res.statusCode = 404;
       res.end("Not found");
