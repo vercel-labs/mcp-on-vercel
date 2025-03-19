@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@8.15.7+sha512.c85cd21b6da10332156b1ca2aa79c0a61ee7ad2eb0453b88ab299289e9e8ca93e6091232b25c07cbf61f6df77128d9c849e5c9ac6e44854dbd211c49f3a67adc",
   "dependencies": {
+    "@meeting-baas/sdk": "^0.2.0",
     "@modelcontextprotocol/sdk": "^1.6.1",
     "content-type": "^1.0.5",
     "raw-body": "^3.0.0",
@@ -18,6 +20,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10"
+    "@types/node": "^20.11.24",
+    "@types/content-type": "^1.0.5"
   }
 }
