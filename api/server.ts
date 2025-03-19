@@ -1,6 +1,14 @@
 import { BaasClient, MpcClient } from "@meeting-baas/sdk";
+import { createClient } from "redis";
 import { z } from "zod";
 import { initializeMcpApiHandler } from "../lib/mcp-api-handler";
+
+// Initialize Redis client
+const redis = createClient({
+  url: process.env.REDIS_URL,
+});
+
+redis.on("error", (err) => console.error("Redis Client Error", err));
 
 // Initialize the BaaS client
 const baasClient = new BaasClient({
@@ -35,6 +43,9 @@ function convertToZodSchema(parameters: ToolParameter[]): z.ZodRawShape {
 
 const handler = initializeMcpApiHandler(
   async (server) => {
+    // Connect to Redis
+    await redis.connect();
+
     // Register all Meeting BaaS tools automatically
     const tools = mpcClient.getRegisteredTools();
     for (const tool of tools) {
@@ -47,6 +58,24 @@ const handler = initializeMcpApiHandler(
       });
     }
 
+    // Add a Redis test tool
+    server.tool(
+      "redis_test",
+      { key: z.string(), value: z.string() },
+      async ({ key, value }) => {
+        await redis.set(key, value);
+        const result = await redis.get(key);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Redis test: stored ${key}=${value}, retrieved ${result}`,
+            },
+          ],
+        };
+      }
+    );
+
     // Keep the existing echo tool as an example
     server.tool("echo", { message: z.string() }, async ({ message }) => ({
       content: [{ type: "text", text: `Tool echo: ${message}` }],
@@ -57,6 +86,10 @@ const handler = initializeMcpApiHandler(
       tools: {
         echo: {
           description: "Echo a message",
+        },
+        redis_test: {
+          description:
+            "Test Redis connection by storing and retrieving a key-value pair",
         },
         // Meeting BaaS tools will be automatically added to capabilities
       },

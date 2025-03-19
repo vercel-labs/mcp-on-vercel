@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "test:redis": "tsx scripts/test-redis.ts"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,6 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
-    "@types/content-type": "^1.0.5"
+    "tsx": "^4.7.1"
   }
 }
