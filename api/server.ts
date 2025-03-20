@@ -1,3 +1,4 @@
+import type { BaasTypes } from "@meeting-baas/sdk";
 import { BaasClient, MpcClient } from "@meeting-baas/sdk";
 import { IncomingMessage } from "http";
 import { createClient } from "redis";
@@ -46,6 +47,17 @@ function getBaasClient(req: IncomingMessage): BaasClient {
   });
 }
 
+// Type guard to check if an object has required properties
+function hasRequiredProperties<T extends object>(
+  obj: unknown,
+  required: (keyof T)[]
+): obj is T {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  return required.every((prop) => prop in obj);
+}
+
 const handler = initializeMcpApiHandler(
   (server) => {
     return async (req: IncomingMessage) => {
@@ -63,22 +75,131 @@ const handler = initializeMcpApiHandler(
           tool.name,
           paramsSchema,
           async (params: Record<string, string>) => {
-            // Handle tool execution here using the request-specific baasClient
-            try {
-              // Here you would use baasClient to make the actual calls to Meeting BaaS
-              // Example: await baasClient.someMethod(params);
-              return {
-                content: [
-                  {
-                    type: "text",
-                    text: `Tool ${tool.name} executed with Meeting BaaS`,
-                  },
-                ],
-              };
-            } catch (error) {
-              console.error(`Error executing tool ${tool.name}:`, error);
-              throw error;
+            // Transform string parameters to their proper types
+            const transformedParams = Object.entries(params).reduce(
+              (acc, [key, value]) => {
+                // Handle boolean parameters
+                if (value === "true" || value === "false") {
+                  acc[key] = value === "true";
+                }
+                // Handle number parameters
+                else if (!isNaN(Number(value))) {
+                  acc[key] = Number(value);
+                }
+                // Handle object parameters (like speechToText)
+                else if (value.startsWith("{")) {
+                  try {
+                    acc[key] = JSON.parse(value);
+                  } catch (e) {
+                    acc[key] = value;
+                  }
+                }
+                // Keep string parameters as is
+                else {
+                  acc[key] = value;
+                }
+                return acc;
+              },
+              {} as Record<string, any>
+            );
+
+            // Use the corresponding BaaS client method
+            const method = tool.name as keyof typeof baasClient;
+
+            // Type check based on the method
+            switch (method) {
+              case "joinMeeting":
+                if (
+                  !hasRequiredProperties<BaasTypes.JoinRequest>(
+                    transformedParams,
+                    ["botName", "meetingUrl", "reserved"]
+                  )
+                ) {
+                  throw new Error(
+                    "Missing required parameters for joinMeeting"
+                  );
+                }
+                break;
+              case "createCalendar":
+                if (
+                  !hasRequiredProperties<BaasTypes.CreateCalendarParams>(
+                    transformedParams,
+                    [
+                      "oauth_client_id",
+                      "oauth_client_secret",
+                      "oauth_refresh_token",
+                      "platform",
+                    ]
+                  )
+                ) {
+                  throw new Error(
+                    "Missing required parameters for createCalendar"
+                  );
+                }
+                break;
+              case "getMeetingData":
+                if (
+                  !hasRequiredProperties<BaasTypes.GetMeetingDataQuery>(
+                    transformedParams,
+                    ["bot_id"]
+                  )
+                ) {
+                  throw new Error(
+                    "Missing required parameters for getMeetingData"
+                  );
+                }
+                break;
+              case "deleteData":
+                if (
+                  !hasRequiredProperties<BaasTypes.BotIdParam>(
+                    transformedParams,
+                    ["bot_id"]
+                  )
+                ) {
+                  throw new Error("Missing required parameters for deleteData");
+                }
+                break;
+              case "listCalendars":
+                // No required parameters
+                break;
+              case "getCalendar":
+                if (
+                  !hasRequiredProperties<BaasTypes.CalendarUuidParam>(
+                    transformedParams,
+                    ["calendar_uuid"]
+                  )
+                ) {
+                  throw new Error(
+                    "Missing required parameters for getCalendar"
+                  );
+                }
+                break;
+              case "deleteCalendar":
+                if (
+                  !hasRequiredProperties<BaasTypes.CalendarUuidParam>(
+                    transformedParams,
+                    ["calendar_uuid"]
+                  )
+                ) {
+                  throw new Error(
+                    "Missing required parameters for deleteCalendar"
+                  );
+                }
+                break;
+              case "resyncAllCalendars":
+                // No required parameters
+                break;
             }
+
+            const result = await baasClient[method](transformedParams as any);
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(result),
+                },
+              ],
+            };
           }
         );
       }
