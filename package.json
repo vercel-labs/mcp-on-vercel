@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "node -r dotenv/config dist/api/server.js",
+    "dev": "tsc --watch & node -r dotenv/config dist/api/server.js"
   },
   "keywords": [],
   "author": "",
@@ -14,11 +18,13 @@
     "@meeting-baas/sdk": "^0.2.4",
     "@modelcontextprotocol/sdk": "^1.6.1",
     "content-type": "^1.0.5",
+    "dotenv": "^16.4.5",
     "raw-body": "^3.0.0",
     "redis": "^4.7.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10"
+    "@types/node": "^22.13.10",
+    "typescript": "^5.3.3"
   }
 }
