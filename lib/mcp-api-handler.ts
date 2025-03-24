@@ -1,12 +1,12 @@
-import getRawBody from "raw-body";
+import { ServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { IncomingHttpHeaders, IncomingMessage, ServerResponse } from "http";
-import { createClient } from "redis";
 import { Socket } from "net";
+import getRawBody from "raw-body";
+import { createClient } from "redis";
 import { Readable } from "stream";
-import { ServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
 import vercelJson from "../vercel.json";
 
 interface SerializedRequest {
@@ -297,7 +297,7 @@ function createFakeIncomingMessage(
 
   // Create a readable stream that will be used as the base for IncomingMessage
   const readable = new Readable();
-  readable._read = (): void => { }; // Required implementation
+  readable._read = (): void => {}; // Required implementation
 
   // Add the body content if provided
   if (body) {
@@ -322,7 +322,7 @@ function createFakeIncomingMessage(
   // Copy over the stream methods
   req.push = readable.push.bind(readable);
   req.read = readable.read.bind(readable);
-  req.on = readable.on.bind(readable);
+  req.on = readable.on.bind(readable) as IncomingMessage["on"];
   req.pipe = readable.pipe.bind(readable);
 
   return req;
