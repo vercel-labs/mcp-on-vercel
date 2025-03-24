@@ -96,8 +96,8 @@ export function initializeMcpApiHandler(
           serverOptions
         );
 
-        // Get API key from headers for MCP connection
-        const apiKey = req.headers["x-meeting-baas-api-key"] as string;
+        // Get API key from query parameters
+        const apiKey = url.searchParams.get("apiKey");
         if (!apiKey) {
           res.statusCode = 401;
           res.end("Meeting BaaS API key is required");
@@ -109,8 +109,8 @@ export function initializeMcpApiHandler(
       }
       await statelessTransport.handleRequest(req, res);
     } else if (url.pathname === "/sse") {
-      // Get API key from headers
-      const apiKey = req.headers["x-meeting-baas-api-key"] as string;
+      // Get API key from query parameters
+      const apiKey = url.searchParams.get("apiKey");
       if (!apiKey) {
         res.statusCode = 401;
         res.end("Meeting BaaS API key is required");
