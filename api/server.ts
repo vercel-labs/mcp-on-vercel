@@ -1,5 +1,10 @@
+import z from "zod";
 import { initializeMcpApiHandler } from "../lib/mcp-api-handler";
 import registerTools from "./tools";
+
+const apiKeySchema = z.object({
+  apiKey: z.string().min(1, "API key is required"),
+});
 
 const handler = initializeMcpApiHandler(
   (server, apiKey) => {
@@ -7,6 +12,9 @@ const handler = initializeMcpApiHandler(
     server = registerTools(server, apiKey);
   },
   {
+    parameters: {
+      schema: apiKeySchema,
+    },
     capabilities: {
       tools: {
         joinMeeting: {
