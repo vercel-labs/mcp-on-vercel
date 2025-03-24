@@ -1,17 +1,13 @@
-import { ServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
+import getRawBody from "raw-body";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { IncomingHttpHeaders, IncomingMessage, ServerResponse } from "http";
-import { Socket } from "net";
-import getRawBody from "raw-body";
 import { createClient } from "redis";
+import { Socket } from "net";
 import { Readable } from "stream";
-
-// Increase max duration to match vercel.json
-const MAX_DURATION = 300;
-// Keep-alive interval in seconds
-const KEEP_ALIVE_INTERVAL = 30;
+import { ServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
+import vercelJson from "../vercel.json";
 
 interface SerializedRequest {
   requestId: string;
@@ -25,7 +21,8 @@ export function initializeMcpApiHandler(
   initializeServer: (server: McpServer) => void,
   serverOptions: ServerOptions = {}
 ) {
-  const maxDuration = MAX_DURATION;
+  const maxDuration =
+    vercelJson?.functions?.["api/server.ts"]?.maxDuration || 800;
   const redisUrl = process.env.REDIS_URL || process.env.KV_URL;
   if (!redisUrl) {
     throw new Error("REDIS_URL environment variable is not set");
@@ -104,18 +101,6 @@ export function initializeMcpApiHandler(
     } else if (url.pathname === "/sse") {
       console.log("Got new SSE connection");
 
-      // Set headers for SSE
-      res.writeHead(200, {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      });
-
-      // Send keep-alive comments periodically
-      const keepAliveInterval = setInterval(() => {
-        res.write(": keep-alive\n\n");
-      }, KEEP_ALIVE_INTERVAL * 1000);
-
       const transport = new SSEServerTransport("/message", res);
       const sessionId = transport.sessionId;
       const server = new McpServer(
@@ -131,7 +116,6 @@ export function initializeMcpApiHandler(
 
       server.server.onclose = () => {
         console.log("SSE connection closed");
-        clearInterval(keepAliveInterval);
         servers = servers.filter((s) => s !== server);
       };
 
@@ -215,11 +199,11 @@ export function initializeMcpApiHandler(
       });
 
       async function cleanup() {
-        clearInterval(keepAliveInterval);
         clearTimeout(timeout);
         clearInterval(interval);
         await redis.unsubscribe(`requests:${sessionId}`, handleMessage);
         console.log("Done");
+        res.statusCode = 200;
         res.end();
       }
       req.on("close", () => resolveTimeout("client hang up"));
@@ -311,41 +295,35 @@ function createFakeIncomingMessage(
     socket = new Socket(),
   } = options;
 
-  // Create a proper IncomingMessage instance
-  const req = Object.create(IncomingMessage.prototype);
-  Object.assign(req, new Readable(), {
-    method,
-    url,
-    headers,
-    socket,
-    // Add required IncomingMessage properties
-    httpVersion: "1.1",
-    httpVersionMajor: 1,
-    httpVersionMinor: 1,
-    aborted: false,
-    complete: true,
-    connection: socket,
-    // Bind necessary methods
-    _read: function () {},
-    push: function (chunk: any) {
-      if (chunk !== null) {
-        return Readable.prototype.push.call(this, chunk);
-      }
-      return false;
-    },
-  });
+  // Create a readable stream that will be used as the base for IncomingMessage
+  const readable = new Readable();
+  readable._read = (): void => {}; // Required implementation
 
-  // Add the body if provided
+  // Add the body content if provided
   if (body) {
     if (typeof body === "string") {
-      req.push(body);
+      readable.push(body);
     } else if (Buffer.isBuffer(body)) {
-      req.push(body);
+      readable.push(body);
     } else {
-      req.push(JSON.stringify(body));
+      readable.push(JSON.stringify(body));
     }
+    readable.push(null); // Signal the end of the stream
   }
-  req.push(null); // Signal end of stream
+
+  // Create the IncomingMessage instance
+  const req = new IncomingMessage(socket);
+
+  // Set the properties
+  req.method = method;
+  req.url = url;
+  req.headers = headers;
+
+  // Copy over the stream methods
+  req.push = readable.push.bind(readable);
+  req.read = readable.read.bind(readable);
+  req.on = readable.on.bind(readable);
+  req.pipe = readable.pipe.bind(readable);
 
   return req;
 }
