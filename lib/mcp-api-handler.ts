@@ -62,7 +62,35 @@ export function initializeMcpApiHandler(
     res: ServerResponse
   ) {
     await redisPromise;
-    const url = new URL(req.url || "", "https://example.com");
+    const url = new URL(req.url || "", "https://mcp.meetingbaas.com");
+
+    // Skip validation for static files
+    if (url.pathname.endsWith(".ico") || url.pathname.endsWith(".png")) {
+      return;
+    }
+
+    // Only validate API key for SSE and chat endpoints
+    let apiKey: string | null = null;
+    if (url.pathname === "/sse" || url.pathname === "/message") {
+      // Check for API key in headers first, then fall back to environment variable in dev mode
+      apiKey =
+        (req.headers["x-meeting-baas-api-key"] as string) ||
+        (req.headers["x-api-key"] as string) ||
+        (req.headers["authorization"] as string)?.replace("Bearer ", "") ||
+        (process.env.NODE_ENV === "development"
+          ? process.env.BAAS_API_KEY
+          : null) ||
+        null;
+
+      if (!apiKey) {
+        res.statusCode = 401;
+        res.end(
+          "Meeting BaaS API key is required in x-meeting-baas-api-key, x-api-key, or Authorization header"
+        );
+        return;
+      }
+    }
+
     if (url.pathname === "/mcp") {
       if (req.method === "GET") {
         console.log("Received GET MCP request");
@@ -94,30 +122,6 @@ export function initializeMcpApiHandler(
       }
       console.log("Got new MCP connection", req.url, req.method);
 
-      // Get API key from parameters schema if available
-      let apiKey: string | null = null;
-      if (serverOptions.parameters?.schema) {
-        try {
-          const body = await getRawBody(req, {
-            length: req.headers["content-length"],
-            encoding: "utf-8",
-          });
-          const params = JSON.parse(body);
-          const result = serverOptions.parameters.schema.safeParse(params);
-          if (result.success) {
-            apiKey = result.data.apiKey;
-          }
-        } catch (error) {
-          console.error("Error parsing parameters:", error);
-        }
-      }
-
-      if (!apiKey) {
-        res.statusCode = 401;
-        res.end("Meeting BaaS API key is required");
-        return;
-      }
-
       if (!statelessServer) {
         statelessServer = new McpServer(
           {
@@ -127,35 +131,11 @@ export function initializeMcpApiHandler(
           serverOptions
         );
 
-        initializeServer(statelessServer, apiKey);
+        initializeServer(statelessServer, apiKey || "");
         await statelessServer.connect(statelessTransport);
       }
       await statelessTransport.handleRequest(req, res);
     } else if (url.pathname === "/sse") {
-      // Get API key from parameters schema if available
-      let apiKey: string | null = null;
-      if (serverOptions.parameters?.schema) {
-        try {
-          const body = await getRawBody(req, {
-            length: req.headers["content-length"],
-            encoding: "utf-8",
-          });
-          const params = JSON.parse(body);
-          const result = serverOptions.parameters.schema.safeParse(params);
-          if (result.success) {
-            apiKey = result.data.apiKey;
-          }
-        } catch (error) {
-          console.error("Error parsing parameters:", error);
-        }
-      }
-
-      if (!apiKey) {
-        res.statusCode = 401;
-        res.end("Meeting BaaS API key is required");
-        return;
-      }
-
       console.log("Got new SSE connection");
 
       const transport = new SSEServerTransport("/message", res);
@@ -167,7 +147,7 @@ export function initializeMcpApiHandler(
         },
         serverOptions
       );
-      initializeServer(server, apiKey);
+      initializeServer(server, apiKey || "");
 
       servers.push(server);
 
