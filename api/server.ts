@@ -1,15 +1,10 @@
-import { BaasClient } from "@meeting-baas/sdk";
 import { initializeMcpApiHandler } from "../lib/mcp-api-handler";
 import registerTools from "./tools";
 
 const handler = initializeMcpApiHandler(
-  (server) => {
-    const baasClient = new BaasClient({
-      apiKey: process.env.BAAS_API_KEY || "",
-    });
-
-    // Register Meeting BaaS SDK tools
-    server = registerTools(server);
+  (server, apiKey) => {
+    // Register Meeting BaaS SDK tools with the provided API key
+    server = registerTools(server, apiKey);
   },
   {
     capabilities: {

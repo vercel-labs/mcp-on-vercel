@@ -8,6 +8,8 @@ import getRawBody from "raw-body";
 import { createClient } from "redis";
 import { Readable } from "stream";
 import vercelJson from "../vercel.json";
+import { RedisClientType } from "redis";
+import { registerTools } from "../api/tools.js";
 
 interface SerializedRequest {
   requestId: string;
@@ -18,7 +20,7 @@ interface SerializedRequest {
 }
 
 export function initializeMcpApiHandler(
-  initializeServer: (server: McpServer) => void,
+  initializeServer: (server: McpServer, apiKey: string) => void,
   serverOptions: ServerOptions = {}
 ) {
   const maxDuration =
@@ -94,11 +96,27 @@ export function initializeMcpApiHandler(
           serverOptions
         );
 
-        initializeServer(statelessServer);
+        // Get API key from headers for MCP connection
+        const apiKey = req.headers["x-meeting-baas-api-key"] as string;
+        if (!apiKey) {
+          res.statusCode = 401;
+          res.end("Meeting BaaS API key is required");
+          return;
+        }
+
+        initializeServer(statelessServer, apiKey);
         await statelessServer.connect(statelessTransport);
       }
       await statelessTransport.handleRequest(req, res);
     } else if (url.pathname === "/sse") {
+      // Get API key from headers
+      const apiKey = req.headers["x-meeting-baas-api-key"] as string;
+      if (!apiKey) {
+        res.statusCode = 401;
+        res.end("Meeting BaaS API key is required");
+        return;
+      }
+
       console.log("Got new SSE connection");
 
       const transport = new SSEServerTransport("/message", res);
@@ -110,7 +128,7 @@ export function initializeMcpApiHandler(
         },
         serverOptions
       );
-      initializeServer(server);
+      initializeServer(server, apiKey);
 
       servers.push(server);
 

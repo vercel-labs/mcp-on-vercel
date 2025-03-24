@@ -2,9 +2,9 @@ import { BaasClient } from "@meeting-baas/sdk";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
 
-export function registerTools(server: McpServer): McpServer {
+export function registerTools(server: McpServer, apiKey: string): McpServer {
   const baasClient = new BaasClient({
-    apiKey: process.env.BAAS_API_KEY || "",
+    apiKey: apiKey,
   });
 
   // Register Meeting BaaS SDK tools
