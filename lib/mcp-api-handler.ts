@@ -247,7 +247,7 @@ function createFakeIncomingMessage(
 
   // Create a readable stream that will be used as the base for IncomingMessage
   const readable = new Readable();
-  readable._read = (): void => {}; // Required implementation
+  readable._read = (): void => { }; // Required implementation
 
   // Add the body content if provided
   if (body) {
