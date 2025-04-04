@@ -97,8 +97,9 @@ export function initializeMcpApiHandler(
       if (!apiKey) {
         apiKey =
           (req.headers["x-meeting-baas-api-key"] as string) ||
+          (req.headers["x-meetingbaas-apikey"] as string) ||
           (req.headers["x-api-key"] as string) ||
-          (req.headers["authorization"] as string)?.replace("Bearer ", "") ||
+          (req.headers["authorization"] as string)?.replace(/bearer\s+/i, "") ||
           (process.env.NODE_ENV === "development"
             ? process.env.BAAS_API_KEY
             : null) ||
@@ -108,7 +109,7 @@ export function initializeMcpApiHandler(
       if (!apiKey) {
         res.statusCode = 401;
         res.end(
-          "Meeting BaaS API key is required in request body, x-meeting-baas-api-key, x-api-key, or Authorization header"
+          "Meeting BaaS API key is required in request body, x-meeting-baas-api-key, x-meetingbaas-apikey, x-api-key, or Authorization header"
         );
         return;
       }
