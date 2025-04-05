@@ -106,13 +106,7 @@ export function initializeMcpApiHandler(
           null;
       }
 
-      if (!apiKey) {
-        res.statusCode = 401;
-        res.end(
-          "Meeting BaaS API key is required in request body, x-meeting-baas-api-key, x-meetingbaas-apikey, x-api-key, or Authorization header"
-        );
-        return;
-      }
+      // Authentication is optional, so we don't return an error if no API key is found
     }
 
     if (url.pathname === "/mcp") {
@@ -155,7 +149,12 @@ export function initializeMcpApiHandler(
           serverOptions
         );
 
-        initializeServer(statelessServer, apiKey || "");
+        try {
+          initializeServer(statelessServer, apiKey || "");
+        } catch (error) {
+          console.error("Error initializing server:", error);
+          // Continue without failing - authentication is optional
+        }
         await statelessServer.connect(statelessTransport);
       }
       await statelessTransport.handleRequest(req, res);
@@ -171,7 +170,13 @@ export function initializeMcpApiHandler(
         },
         serverOptions
       );
-      initializeServer(server, apiKey || "");
+
+      try {
+        initializeServer(server, apiKey || "");
+      } catch (error) {
+        console.error("Error initializing server:", error);
+        // Continue without failing - authentication is optional
+      }
 
       servers.push(server);
 
