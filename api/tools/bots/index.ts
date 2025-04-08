@@ -4,7 +4,7 @@ import { registerJoinTool } from "./join";
 
 export function registerBotTools(server: McpServer, baasClient: BaasClient): McpServer {
   // Register all bot-related tools
-  server = registerJoinTool(server, baasClient);
+  const updatedServer = registerJoinTool(server, baasClient);
   
-  return server;
+  return updatedServer;
 } 

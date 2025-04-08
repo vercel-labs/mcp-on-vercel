@@ -9,10 +9,10 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
   });
 
   // Register bot tools
-  server = registerBotTools(server, baasClient);
+  const updatedServer = registerBotTools(server, baasClient);
 
   // Add a simple echo tool for testing
-  server.tool("echo", { message: z.string() }, async ({ message }: { message: string }) => ({
+  updatedServer.tool("echo", { message: z.string() }, async ({ message }: { message: string }) => ({
     content: [
       {
         type: "text",
@@ -21,7 +21,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     ],
   }));
 
-  return server;
+  return updatedServer;
 }
 
 export default registerTools; 
