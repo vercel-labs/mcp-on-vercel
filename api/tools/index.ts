@@ -1,7 +1,7 @@
 import { BaasClient } from "@meeting-baas/sdk";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
 import { registerBotTools } from "./bots";
+import { registerEchoTool } from "./utils/echo";
 
 export function registerTools(server: McpServer, apiKey: string): McpServer {
   const baasClient = new BaasClient({
@@ -11,17 +11,10 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
   // Register bot tools
   const updatedServer = registerBotTools(server, baasClient);
 
-  // Add a simple echo tool for testing
-  updatedServer.tool("echo", { message: z.string() }, async ({ message }: { message: string }) => ({
-    content: [
-      {
-        type: "text",
-        text: `Tool echo: ${message}`,
-      },
-    ],
-  }));
+  // Add echo tool for testing
+  const finalServer = registerEchoTool(updatedServer);
 
-  return updatedServer;
+  return finalServer;
 }
 
 export default registerTools; 
