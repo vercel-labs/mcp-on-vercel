@@ -1,10 +1,12 @@
-import { BaasClient } from "@meeting-baas/sdk";
+import { BaasClient } from "@meeting-baas/sdk/dist/generated/baas/api/client";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 // Constants for configuration based on OpenAPI spec
 const RECORDING_MODES = ['speaker_view', 'gallery_view', 'audio_only'] as const;
-const SPEECH_TO_TEXT_PROVIDERS = ['Gladia', 'Runpod', 'Default'] as const;
+
+// Import the enums from the SDK's generated types
+import { AudioFrequency, SpeechToTextProvider } from "@meeting-baas/sdk/dist/generated/baas/models";
 
 export function registerJoinTool(server: McpServer, baasClient: BaasClient): McpServer {
   server.tool(
@@ -18,9 +20,18 @@ export function registerJoinTool(server: McpServer, baasClient: BaasClient): Mcp
       webhookUrl: z.string().url().optional().describe("A webhook URL to send events to, overrides the webhook URL set in your account settings."),
       recordingMode: z.enum(RECORDING_MODES).optional().describe("The recording mode for the bot, defaults to 'speaker_view'."),
       speechToText: z.object({
-        provider: z.enum(SPEECH_TO_TEXT_PROVIDERS),
+        provider: z.nativeEnum(SpeechToTextProvider),
         apiKey: z.string().optional()
       }).optional().describe("The default speech to text provider is Gladia."),
+      streaming: z.object({
+        input: z.string().url().optional().describe("WebSocket URL for audio input"),
+        output: z.string().url().optional().describe("WebSocket URL for audio output"),
+        audioFrequency: z.nativeEnum(AudioFrequency).optional().describe("Audio frequency for streaming")
+      }).optional().describe("Configure streaming capabilities for the bot"),
+      automaticLeave: z.object({
+        nooneJoinedTimeout: z.number().optional().describe("Timeout in seconds when no one joins"),
+        waitingRoomTimeout: z.number().optional().describe("Timeout in seconds when in waiting room")
+      }).optional().describe("Configure automatic leave behavior"),
       reserved: z.boolean().default(false).describe("Whether or not the bot should come from the available pool of bots or be a dedicated bot. Reserved bots come in exactly 4 minutes after the request."),
       startTime: z.number().optional().describe("Unix timestamp (in milliseconds) for when the bot should join the meeting. The bot joins 4 minutes before the start time."),
       deduplicationKey: z.string().optional().describe("We prevent multiple bots with same API key joining a meeting within 5 mins, unless overridden by deduplication_key."),
@@ -29,32 +40,51 @@ export function registerJoinTool(server: McpServer, baasClient: BaasClient): Mcp
     async (params) => {
       try {
         // Join the meeting using the BaaS SDK
-        const botId = await baasClient.joinMeeting({
-          meetingUrl: params.meetingUrl,
-          botName: params.botName,
-          botImage: params.botImage,
-          entryMessage: params.entryMessage,
-          webhookUrl: params.webhookUrl,
-          recordingMode: params.recordingMode || 'speaker_view',
-          speechToText: params.speechToText && {
-            provider: params.speechToText.provider,
-            api_key: params.speechToText.apiKey
-          },
-          reserved: params.reserved,
-          startTime: params.startTime,
-          deduplicationKey: params.deduplicationKey,
-          extra: params.extra
-        });
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Successfully joined meeting with bot ID: ${botId}`
-            }
-          ]
+        const joinRequest = {
+          joinRequest: {
+            meeting_url: params.meetingUrl,
+            bot_name: params.botName,
+            bot_image: params.botImage,
+            webhook_url: params.webhookUrl,
+            recording_mode: params.recordingMode || 'speaker_view',
+            speech_to_text: params.speechToText && {
+              provider: params.speechToText.provider,
+              api_key: params.speechToText.apiKey
+            },
+            reserved: params.reserved,
+            streaming: params.streaming && {
+              input: params.streaming.input,
+              output: params.streaming.output,
+              audio_frequency: params.streaming.audioFrequency
+            },
+            automatic_leave: params.automaticLeave && {
+              noone_joined_timeout: params.automaticLeave.nooneJoinedTimeout,
+              waiting_room_timeout: params.automaticLeave.waitingRoomTimeout
+            },
+            start_time: params.startTime,
+            deduplication_key: params.deduplicationKey,
+            extra: params.extra
+          }
         };
 
+        const response = await baasClient.defaultApi.join(joinRequest);
+
+        if (response.data.bot_id) {
+          return {
+            content: [{
+              type: "text",
+              text: `Successfully joined meeting with bot ID: ${response.data.bot_id}${params.speechToText ? ` (Speech-to-text provider: ${params.speechToText.provider})` : ''}`
+            }]
+          };
+        }
+
+        return {
+          content: [{
+            type: "text",
+            text: "No bot ID received in the response"
+          }],
+          isError: true
+        };
       } catch (error) {
         console.error("Failed to join meeting:", error);
         
