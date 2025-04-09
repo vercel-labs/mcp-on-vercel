@@ -23,26 +23,55 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     { botId: z.string() },
     async ({ botId }: { botId: string }) => {
       try {
+        console.log(`Attempting to remove bot ${botId} from meeting...`);
         // @ts-ignore - SDK type definition issue
         const response = await baasClient.defaultApi.leave({ bot_id: botId });
+        console.log('Leave meeting response:', JSON.stringify(response.data, null, 2));
+        
+        if (!response.data) {
+          console.error('Leave meeting response missing data');
+          return {
+            content: [
+              {
+                type: "text",
+                text: "Failed to leave meeting: No response data received"
+              }
+            ],
+            isError: true
+          };
+        }
+
         return {
           content: [
             {
               type: "text",
-              text: "Successfully left meeting",
-            },
-          ],
+              text: `Successfully removed bot ${botId} from meeting`
+            }
+          ]
         };
       } catch (error) {
         console.error("Failed to leave meeting:", error);
+        let errorMessage = "Failed to leave meeting";
+        
+        if (error instanceof Error) {
+          console.error('Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+          });
+          errorMessage += `: ${error.message}`;
+        } else if (typeof error === 'object' && error !== null) {
+          console.error('Error object:', JSON.stringify(error, null, 2));
+        }
+        
         return {
           content: [
             {
               type: "text",
-              text: "Failed to leave meeting",
-            },
+              text: errorMessage
+            }
           ],
-          isError: true,
+          isError: true
         };
       }
     }

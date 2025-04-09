@@ -11,7 +11,7 @@ import { AudioFrequency, SpeechToTextProvider } from "@meeting-baas/sdk/dist/gen
 export function registerJoinTool(server: McpServer, baasClient: BaasClient): McpServer {
   server.tool(
     "joinMeeting",
-    "Send an AI bot to join a video meeting. The bot can record the meeting, transcribe speech, and provide real-time audio streams. Use this when you want to: 1) Record a meeting 2) Get meeting transcriptions 3) Stream meeting audio 4) Monitor meeting attendance",
+    "Send an AI bot to join a video meeting. The bot can record the meeting, transcribe speech (enabled by default using Gladia), and provide real-time audio streams. Use this when you want to: 1) Record a meeting 2) Get meeting transcriptions 3) Stream meeting audio 4) Monitor meeting attendance",
     {
       meetingUrl: z.string().url().describe("URL of the meeting to join"),
       botName: z.string().describe("Name to display for the bot in the meeting"),
@@ -73,7 +73,7 @@ export function registerJoinTool(server: McpServer, baasClient: BaasClient): Mcp
           return {
             content: [{
               type: "text",
-              text: `Successfully joined meeting with bot ID: ${response.data.bot_id}${params.speechToText ? ` (Speech-to-text provider: ${params.speechToText.provider})` : ''}`
+              text: `Successfully joined meeting with bot ID: ${response.data.bot_id} (Speech-to-text enabled by default using ${params.speechToText?.provider || SpeechToTextProvider.default} provider)`
             }]
           };
         }
