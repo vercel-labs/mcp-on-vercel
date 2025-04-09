@@ -20,9 +20,9 @@ export function registerJoinTool(server: McpServer, baasClient: BaasClient): Mcp
       webhookUrl: z.string().url().optional().describe("A webhook URL to send events to, overrides the webhook URL set in your account settings."),
       recordingMode: z.enum(RECORDING_MODES).optional().describe("The recording mode for the bot, defaults to 'speaker_view'."),
       speechToText: z.object({
-        provider: z.nativeEnum(SpeechToTextProvider),
+        provider: z.nativeEnum(SpeechToTextProvider).default(SpeechToTextProvider.gladia),
         apiKey: z.string().optional()
-      }).optional().describe("The default speech to text provider is Gladia."),
+      }).default({ provider: SpeechToTextProvider.default }).describe("The speech to text provider, defaults to Gladia."),
       streaming: z.object({
         input: z.string().url().optional().describe("WebSocket URL for audio input"),
         output: z.string().url().optional().describe("WebSocket URL for audio output"),
@@ -47,9 +47,9 @@ export function registerJoinTool(server: McpServer, baasClient: BaasClient): Mcp
             bot_image: params.botImage,
             webhook_url: params.webhookUrl,
             recording_mode: params.recordingMode || 'speaker_view',
-            speech_to_text: params.speechToText && {
-              provider: params.speechToText.provider,
-              api_key: params.speechToText.apiKey
+            speech_to_text: {
+              provider: params.speechToText?.provider || SpeechToTextProvider.gladia,
+              api_key: params.speechToText?.apiKey
             },
             reserved: params.reserved,
             streaming: params.streaming && {
