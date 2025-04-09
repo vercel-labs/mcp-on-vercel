@@ -5,8 +5,11 @@ import { z } from "zod";
 // Constants for configuration based on OpenAPI spec
 const RECORDING_MODES = ['speaker_view', 'gallery_view', 'audio_only'] as const;
 
-// Import the enums from the SDK's generated types
+// Import the enums and types from the SDK's generated types
 import { AudioFrequency, SpeechToTextProvider } from "@meeting-baas/sdk/dist/generated/baas/models";
+import { JoinRequest } from "@meeting-baas/sdk/dist/generated/baas/models/join-request";
+import { JoinRequestAutomaticLeave } from "@meeting-baas/sdk/dist/generated/baas/models/join-request-automatic-leave";
+import { JoinRequestSpeechToText } from "@meeting-baas/sdk/dist/generated/baas/models/join-request-speech-to-text";
 
 export function registerJoinTool(server: McpServer, baasClient: BaasClient): McpServer {
   server.tool(
@@ -39,35 +42,35 @@ export function registerJoinTool(server: McpServer, baasClient: BaasClient): Mcp
     },
     async (params) => {
       try {
-        // Join the meeting using the BaaS SDK
-        const joinRequest = {
-          joinRequest: {
-            meeting_url: params.meetingUrl,
-            bot_name: params.botName,
-            bot_image: params.botImage,
-            webhook_url: params.webhookUrl,
-            recording_mode: params.recordingMode || 'speaker_view',
-            speech_to_text: {
-              provider: params.speechToText?.provider || SpeechToTextProvider.gladia,
-              api_key: params.speechToText?.apiKey
-            },
-            reserved: params.reserved,
-            streaming: params.streaming && {
-              input: params.streaming.input,
-              output: params.streaming.output,
-              audio_frequency: params.streaming.audioFrequency
-            },
-            automatic_leave: params.automaticLeave && {
-              noone_joined_timeout: params.automaticLeave.nooneJoinedTimeout,
-              waiting_room_timeout: params.automaticLeave.waitingRoomTimeout
-            },
-            start_time: params.startTime,
-            deduplication_key: params.deduplicationKey,
-            extra: params.extra
-          }
+        // Create the join request using the SDK's types
+        const joinRequest: JoinRequest = {
+          meeting_url: params.meetingUrl,
+          bot_name: params.botName,
+          bot_image: params.botImage,
+          webhook_url: params.webhookUrl,
+          recording_mode: params.recordingMode || 'speaker_view',
+          speech_to_text: params.speechToText && {
+            provider: params.speechToText.provider,
+            api_key: params.speechToText.apiKey
+          } as JoinRequestSpeechToText,
+          reserved: params.reserved,
+          streaming: params.streaming && {
+            input: params.streaming.input,
+            output: params.streaming.output,
+            audio_frequency: params.streaming.audioFrequency
+          },
+          automatic_leave: params.automaticLeave && {
+            noone_joined_timeout: params.automaticLeave.nooneJoinedTimeout,
+            waiting_room_timeout: params.automaticLeave.waitingRoomTimeout
+          } as JoinRequestAutomaticLeave,
+          start_time: params.startTime,
+          deduplication_key: params.deduplicationKey,
+          extra: params.extra
         };
 
-        const response = await baasClient.defaultApi.join(joinRequest);
+        const response = await baasClient.defaultApi.join({
+          joinRequest
+        });
 
         if (response.data.bot_id) {
           return {
