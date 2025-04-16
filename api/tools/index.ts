@@ -17,4 +17,4 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
   return finalServer;
 }
 
-export default registerTools; 
+export default registerTools;
