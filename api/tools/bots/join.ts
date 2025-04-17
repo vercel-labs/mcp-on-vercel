@@ -109,7 +109,7 @@ export function registerJoinTool(
     },
     async (params) => {
       try {
-        // Create the join request
+        // Create the join request object that matches the SDK's expected format
         const joinRequest = {
           meetingUrl: params.meetingUrl,
           botName: params.botName,
@@ -135,7 +135,7 @@ export function registerJoinTool(
           extra: params.extra,
         };
 
-        // Use the baasClient's join method instead of direct axios call
+        // Use the BaasClient's defaultApi methods
         const response = await baasClient.defaultApi.join({
           joinRequest,
         });
