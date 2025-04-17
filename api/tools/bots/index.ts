@@ -9,7 +9,7 @@ export function registerBotTools(
 ): McpServer {
   // Register all bot-related tools
   let updatedServer = registerJoinTool(server, baasClient);
-  updatedServer = registerJoinSpeakingTool(server);
+  updatedServer = registerJoinSpeakingTool(updatedServer);
 
   return updatedServer;
 }
