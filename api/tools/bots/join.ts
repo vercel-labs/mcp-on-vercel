@@ -1,5 +1,5 @@
+import { BaasClient } from "@meeting-baas/sdk/dist/baas/api/client.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import axios from "axios";
 import { z } from "zod";
 
 // Constants for configuration based on OpenAPI spec
@@ -7,7 +7,7 @@ const RECORDING_MODES = ["speaker_view", "gallery_view", "audio_only"] as const;
 
 export function registerJoinTool(
   server: McpServer,
-  baasClient: any
+  baasClient: BaasClient
 ): McpServer {
   server.tool(
     "joinMeeting",
@@ -109,54 +109,44 @@ export function registerJoinTool(
     },
     async (params) => {
       try {
-        // Use the baasClient, but access the underlying request config to get the API key
-        const apiKey = baasClient.configuration.apiKey;
-
         // Create the join request
         const joinRequest = {
-          meeting_url: params.meetingUrl,
-          bot_name: params.botName,
-          bot_image: params.botImage,
-          webhook_url: params.webhookUrl,
-          recording_mode: params.recordingMode || "speaker_view",
-          speech_to_text: params.speechToText && {
+          meetingUrl: params.meetingUrl,
+          botName: params.botName,
+          botImage: params.botImage,
+          webhookUrl: params.webhookUrl,
+          recordingMode: params.recordingMode || "speaker_view",
+          speechToText: params.speechToText && {
             provider: params.speechToText.provider,
-            api_key: params.speechToText.apiKey,
+            apiKey: params.speechToText.apiKey,
           },
           reserved: params.reserved,
           streaming: params.streaming && {
             input: params.streaming.input,
             output: params.streaming.output,
-            audio_frequency: params.streaming.audioFrequency,
+            audioFrequency: params.streaming.audioFrequency,
           },
-          automatic_leave: params.automaticLeave && {
-            noone_joined_timeout: params.automaticLeave.nooneJoinedTimeout,
-            waiting_room_timeout: params.automaticLeave.waitingRoomTimeout,
+          automaticLeave: params.automaticLeave && {
+            nooneJoinedTimeout: params.automaticLeave.nooneJoinedTimeout,
+            waitingRoomTimeout: params.automaticLeave.waitingRoomTimeout,
           },
-          start_time: params.startTime,
-          deduplication_key: params.deduplicationKey,
+          startTime: params.startTime,
+          deduplicationKey: params.deduplicationKey,
           extra: params.extra,
         };
 
-        // Make a direct API call
-        const response = await axios.post(
-          "https://api.meetingbaas.com/v1/bots/join",
-          { joinRequest },
-          {
-            headers: {
-              "X-API-Key": apiKey,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        // Use the baasClient's join method instead of direct axios call
+        const response = await baasClient.defaultApi.join({
+          joinRequest,
+        });
 
-        if (response.data.bot_id) {
+        if (response.data?.botId) {
           return {
             content: [
               {
                 type: "text",
                 text: `Successfully joined meeting with bot ID: ${
-                  response.data.bot_id
+                  response.data.botId
                 } (Speech-to-text enabled by default using ${
                   params.speechToText?.provider || "default"
                 } provider)`,
