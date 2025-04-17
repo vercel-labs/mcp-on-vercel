@@ -38,8 +38,8 @@ importers:
   .:
     dependencies:
       '@meeting-baas/sdk':
-        specifier: 0.3.8
-        version: 0.3.8
+        specifier: 4.0.0
+        version: 4.0.0
       '@modelcontextprotocol/sdk':
         specifier: ^1.6.1
         version: 1.9.0
@@ -246,8 +246,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@meeting-baas/sdk@0.3.8':
-    resolution: {integrity: sha512-IL8S98cPgeGQgGqdSepjJHEmEKE1QAqOLjrgljE9tkVE8bCHr8TU5ZvhiRH7s6rrZh0FSJV5GJRBXjOOK6bd0A==}
+  '@meeting-baas/sdk@4.0.0':
+    resolution: {integrity: sha512-B6e7DeRPNlThxzHTYNNvmTlZE21084TZSA4XPSeoA5dlGLOD5NEdoPfsdRp6uToj7mKJuT9rh4PELCrKW+eA1A==}
 
   '@modelcontextprotocol/sdk@1.9.0':
     resolution: {integrity: sha512-Jq2EUCQpe0iyO5FGpzVYDNFR6oR53AIrwph9yWl7uSc7IWUMsrmpmSaTGra5hQNunXpM+9oit85p924jWuHzUA==}
@@ -1153,7 +1153,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@meeting-baas/sdk@0.3.8':
+  '@meeting-baas/sdk@4.0.0':
     dependencies:
       axios: 1.8.3
       zod: 3.24.2
