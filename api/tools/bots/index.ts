@@ -1,7 +1,8 @@
-import { BaasClient } from "@meeting-baas/sdk/dist/generated/baas/api/client";
+import { BaasClient } from "@meeting-baas/sdk";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerJoinTool } from "./join";
 import { registerJoinSpeakingTool } from "./join-speaking";
+
 export function registerBotTools(
   server: McpServer,
   baasClient: BaasClient

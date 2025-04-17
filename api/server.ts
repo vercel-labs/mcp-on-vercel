@@ -51,6 +51,12 @@ const handler = initializeMcpApiHandler(
         updateCalendar: {
           description: "Update calendar using the MeetingBaas api",
         },
+        joinSpeakingMeeting: {
+          description: "Join a speaking meeting using the MeetingBaas api",
+        },
+        leaveSpeakingMeeting: {
+          description: "Leave a speaking meeting using the MeetingBaas api",
+        },
         echo: {
           description: "Echo a message",
         },

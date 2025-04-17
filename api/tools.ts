@@ -1,16 +1,11 @@
-import { BaasClient } from "@meeting-baas/sdk/dist/generated/baas/api/client";
-import { CreateCalendarParams } from "@meeting-baas/sdk/dist/generated/baas/models/create-calendar-params";
-import { UpdateCalendarParams } from "@meeting-baas/sdk/dist/generated/baas/models/update-calendar-params";
-import { BotParam2 } from "@meeting-baas/sdk/dist/generated/baas/models/bot-param2";
+import { BaasClient } from "@meeting-baas/sdk/dist/baas/api/client";
+import { CreateCalendarParams } from "@meeting-baas/sdk/dist/baas/models/create-calendar-params";
+import { Provider } from "@meeting-baas/sdk/dist/baas/models/provider";
+import { UpdateCalendarParams } from "@meeting-baas/sdk/dist/baas/models/update-calendar-params";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
 import { registerJoinTool } from "./tools/bots/join";
 import { registerEchoTool } from "./tools/utils/echo";
-import { Provider } from "@meeting-baas/sdk/dist/generated/baas/models/provider";
-import { JoinRequest } from "@meeting-baas/sdk/dist/generated/baas/models/join-request";
-import { JoinRequestAutomaticLeave } from "@meeting-baas/sdk/dist/generated/baas/models/join-request-automatic-leave";
-import { JoinRequestSpeechToText } from "@meeting-baas/sdk/dist/generated/baas/models/join-request-speech-to-text";
-import { SpeechToTextProvider } from "@meeting-baas/sdk/dist/generated/baas/models/speech-to-text-provider";
 
 export function registerTools(server: McpServer, apiKey: string): McpServer {
   const baasClient = new BaasClient({
@@ -28,15 +23,15 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ botId }: { botId: string }) => {
       try {
         await baasClient.defaultApi.leave({
-          headers: { "x-bot-id": botId }
+          headers: { "x-bot-id": botId },
         });
         return {
           content: [
             {
               type: "text",
-              text: `Successfully removed bot ${botId} from meeting`
-            }
-          ]
+              text: `Successfully removed bot ${botId} from meeting`,
+            },
+          ],
         };
       } catch (error) {
         console.error("Error leaving meeting:", error);
@@ -44,10 +39,10 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
           content: [
             {
               type: "text",
-              text: "Failed to leave meeting"
-            }
+              text: "Failed to leave meeting",
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
     }
@@ -60,15 +55,15 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ botId }: { botId: string }) => {
       try {
         const response = await baasClient.defaultApi.getMeetingData({
-          botId
+          botId,
         });
         return {
           content: [
             {
               type: "text",
-              text: `Meeting data: ${JSON.stringify(response.data, null, 2)}`
-            }
-          ]
+              text: `Meeting data: ${JSON.stringify(response.data, null, 2)}`,
+            },
+          ],
         };
       } catch (error) {
         console.error("Error getting meeting data:", error);
@@ -76,10 +71,10 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
           content: [
             {
               type: "text",
-              text: "Failed to get meeting data"
-            }
+              text: "Failed to get meeting data",
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
     }
@@ -92,15 +87,15 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ botId }: { botId: string }) => {
       try {
         await baasClient.defaultApi.deleteData({
-          headers: { "x-bot-id": botId }
+          headers: { "x-bot-id": botId },
         });
         return {
           content: [
             {
               type: "text",
-              text: "Successfully deleted meeting data"
-            }
-          ]
+              text: "Successfully deleted meeting data",
+            },
+          ],
         };
       } catch (error) {
         console.error("Error deleting data:", error);
@@ -108,10 +103,10 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
           content: [
             {
               type: "text",
-              text: "Failed to delete data"
-            }
+              text: "Failed to delete data",
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
     }
@@ -127,17 +122,26 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
       platform: z.enum(["Google", "Microsoft"]),
       rawCalendarId: z.string(),
     },
-    async ({ oauthClientId, oauthClientSecret, oauthRefreshToken, platform, rawCalendarId }) => {
+    async ({
+      oauthClientId,
+      oauthClientSecret,
+      oauthRefreshToken,
+      platform,
+      rawCalendarId,
+    }) => {
       try {
         let createCalendarParams: CreateCalendarParams = {
-          oauth_client_id: oauthClientId,
-          oauth_client_secret: oauthClientSecret,
-          oauth_refresh_token: oauthRefreshToken,
-          platform: platform === "Google" ? Provider.google : Provider.microsoft,
-          raw_calendar_id: rawCalendarId
+          oauthClientId: oauthClientId,
+          oauthClientSecret: oauthClientSecret,
+          oauthRefreshToken: oauthRefreshToken,
+          platform:
+            platform === "Google" ? Provider.google : Provider.microsoft,
+          raw_calendar_id: rawCalendarId,
         };
         // @ts-ignore - SDK type definition issue
-        const response = await baasClient.calendarsApi.createCalendar(createCalendarParams);
+        const response = await baasClient.calendarsApi.createCalendar(
+          createCalendarParams
+        );
         return {
           content: [
             {
@@ -198,7 +202,9 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ calendarId }: { calendarId: string }) => {
       try {
         // @ts-ignore - SDK type definition issue
-        const response = await baasClient.calendarsApi.getCalendar({ calendar_id: calendarId });
+        const response = await baasClient.calendarsApi.getCalendar({
+          calendarId: calendarId,
+        });
         return {
           content: [
             {
@@ -229,7 +235,9 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ calendarId }: { calendarId: string }) => {
       try {
         // @ts-ignore - SDK type definition issue
-        const response = await baasClient.calendarsApi.deleteCalendar({ calendar_id: calendarId });
+        const response = await baasClient.calendarsApi.deleteCalendar({
+          calendar_id: calendarId,
+        });
         return {
           content: [
             {
@@ -298,13 +306,17 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
           limit: 10,
           meetingUrl: "",
           sortByExtra: "",
-          speakerName: ""
+          speakerName: "",
         });
         return {
           content: [
             {
               type: "text",
-              text: `Bots with metadata: ${JSON.stringify(response.data, null, 2)}`
+              text: `Bots with metadata: ${JSON.stringify(
+                response.data,
+                null,
+                2
+              )}`,
             },
           ],
         };
@@ -314,10 +326,10 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
           content: [
             {
               type: "text",
-              text: "Failed to list bots"
-            }
+              text: "Failed to list bots",
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
     }
@@ -330,7 +342,9 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ calendarId }) => {
       try {
         // @ts-ignore - SDK type definition issue
-        const response = await baasClient.calendarsApi.listEvents({ calendar_id: calendarId });
+        const response = await baasClient.calendarsApi.listEvents({
+          calendarId: calendarId,
+        });
         return {
           content: [
             {
@@ -365,15 +379,18 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ eventUuid, botName, extra }) => {
       try {
         // @ts-ignore - SDK type definition issue
-        const response = await baasClient.calendarsApi.scheduleRecordEvent({
-          botParam2: {
-            bot_name: botName,
-            extra: extra || {},
+        const response = await baasClient.calendarsApi.scheduleRecordEvent(
+          {
+            botParam2: {
+              botName: botName,
+              extra: extra || {},
+            },
+            allOccurrences: false,
           },
-          allOccurrences: false,
-        }, {
-          url: `/calendarEvents/${eventUuid}/bot`
-        });
+          {
+            url: `/calendarEvents/${eventUuid}/bot`,
+          }
+        );
         return {
           content: [
             {
@@ -404,7 +421,9 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ eventUuid }: { eventUuid: string }) => {
       try {
         // @ts-ignore - SDK type definition issue
-        const response = await baasClient.calendarsApi.unscheduleRecordEvent({ uuid: eventUuid });
+        const response = await baasClient.calendarsApi.unscheduleRecordEvent({
+          uuid: eventUuid,
+        });
         return {
           content: [
             {
@@ -438,17 +457,27 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
       oauthRefreshToken: z.string(),
       platform: z.enum(["Google", "Microsoft"]),
     },
-    async ({ calendarId, oauthClientId, oauthClientSecret, oauthRefreshToken, platform }) => {
+    async ({
+      calendarId,
+      oauthClientId,
+      oauthClientSecret,
+      oauthRefreshToken,
+      platform,
+    }) => {
       try {
         const updateParams: UpdateCalendarParams = {
-          oauth_client_id: oauthClientId,
-          oauth_client_secret: oauthClientSecret,
-          oauth_refresh_token: oauthRefreshToken,
-          platform: platform === "Google" ? Provider.google : Provider.microsoft,
+          oauthClientId: oauthClientId,
+          oauthClientSecret: oauthClientSecret,
+          oauthRefreshToken: oauthRefreshToken,
+          platform:
+            platform === "Google" ? Provider.google : Provider.microsoft,
         };
 
         // @ts-ignore - SDK type definition issue
-        const response = await baasClient.calendarsApi.updateCalendar(calendarId, updateParams);
+        const response = await baasClient.calendarsApi.updateCalendar(
+          calendarId,
+          updateParams
+        );
         return {
           content: [
             {
