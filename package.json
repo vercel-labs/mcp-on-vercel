@@ -8,7 +8,8 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "start": "node -r dotenv/config dist/api/server.js",
-    "dev": "tsc --watch & node -r dotenv/config dist/api/server.js"
+    "dev": "tsc --watch & node -r dotenv/config dist/api/server.js",
+    "test-client": "tsc && node dist/scripts/test-client.js"
   },
   "keywords": [],
   "author": "",

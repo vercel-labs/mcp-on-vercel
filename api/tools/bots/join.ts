@@ -1,5 +1,5 @@
-import { BaasClient } from "@meeting-baas/sdk/dist/baas/api/client.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { BaasClient } from "@meeting-baas/sdk/dist/baas/api/client";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { z } from "zod";
 
 // Constants for configuration based on OpenAPI spec

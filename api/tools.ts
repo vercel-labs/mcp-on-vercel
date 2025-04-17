@@ -1,9 +1,9 @@
-import { BaasClient } from "@meeting-baas/sdk/dist/baas/api/client.js";
-import { Provider } from "@meeting-baas/sdk/dist/baas/models/provider.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { BaasClient } from "@meeting-baas/sdk/dist/baas/api/client";
+import { Provider } from "@meeting-baas/sdk/dist/baas/models/provider";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import z from "zod";
-import { registerJoinTool } from "./tools/bots/join.js";
-import { registerEchoTool } from "./tools/utils/echo.js";
+import { registerBotTools } from "./tools/bots/index";
+import { registerEchoTool } from "./tools/utils/echo";
 
 export function registerTools(server: McpServer, apiKey: string): McpServer {
   const baasClient = new BaasClient({
@@ -12,7 +12,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
   });
 
   // Register bot tools
-  const updatedServer = registerJoinTool(server, baasClient);
+  const updatedServer = registerBotTools(server, baasClient);
 
   // Register Meeting BaaS SDK tools
   updatedServer.tool(
