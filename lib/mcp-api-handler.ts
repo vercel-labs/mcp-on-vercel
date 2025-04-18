@@ -8,7 +8,6 @@ import { Socket } from "net";
 import { Readable } from "stream";
 import { ServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
 import vercelJson from "../vercel.json";
-import { stat } from "fs";
 
 interface SerializedRequest {
   requestId: string;
@@ -53,6 +52,10 @@ export function initializeMcpApiHandler(
     await redisPromise;
     const url = new URL(req.url || "", "https://example.com");
     if (url.pathname === "/mcp") {
+      const body = await getRawBody(req, {
+        encoding: "utf-8",
+      });
+      console.log("Got new MCP connection", req.url, req.method, body);
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => crypto.randomUUID(),
       });
@@ -68,11 +71,9 @@ export function initializeMcpApiHandler(
 
         initializeServer(statelessServer);
       }
-      // @ts-ignore
-      transport._initialized = true;
       // Connect to server and handle the request
       await statelessServer.connect(transport);
-      await transport.handleRequest(req, res);
+      await transport.handleRequest(req, res, body);
     } else if (url.pathname === "/sse") {
       console.log("Got new SSE connection");
 
