@@ -64,6 +64,7 @@ export function initializeMcpApiHandler(
           },
           serverOptions
         );
+        initializeServer(statelessServer);
       }
       // Connect to server and handle the request
       await statelessServer.connect(transport);
