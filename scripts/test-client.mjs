@@ -21,6 +21,12 @@ async function main() {
   );
 
   await client.connect(transport);
+
+  console.log("Connected", client.getServerCapabilities());
+
+  const result = await client.listTools();
+  console.log(result);
 }
 
+main();
 main();
