@@ -8,6 +8,7 @@ import { Socket } from "net";
 import { Readable } from "stream";
 import { ServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
 import vercelJson from "../vercel.json";
+import { stat } from "fs";
 
 interface SerializedRequest {
   requestId: string;
@@ -64,7 +65,10 @@ export function initializeMcpApiHandler(
           },
           serverOptions
         );
+
         initializeServer(statelessServer);
+        // @ts-ignore
+        statelessServer._initialized = true;
       }
       // Connect to server and handle the request
       await statelessServer.connect(transport);
