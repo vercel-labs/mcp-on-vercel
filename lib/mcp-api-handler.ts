@@ -54,7 +54,7 @@ export function initializeMcpApiHandler(
     if (url.pathname === "/mcp") {
       console.log("Got new MCP connection", req.url, req.method);
       const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: () => crypto.randomUUID(),
+        sessionIdGenerator: undefined,
       });
 
       if (!statelessServer) {
