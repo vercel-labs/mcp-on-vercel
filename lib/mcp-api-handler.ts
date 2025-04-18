@@ -52,10 +52,7 @@ export function initializeMcpApiHandler(
     await redisPromise;
     const url = new URL(req.url || "", "https://example.com");
     if (url.pathname === "/mcp") {
-      const body = await getRawBody(req, {
-        encoding: "utf-8",
-      });
-      console.log("Got new MCP connection", req.url, req.method, body);
+      console.log("Got new MCP connection", req.url, req.method);
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => crypto.randomUUID(),
       });
@@ -73,7 +70,7 @@ export function initializeMcpApiHandler(
       }
       // Connect to server and handle the request
       await statelessServer.connect(transport);
-      await transport.handleRequest(req, res, body);
+      await transport.handleRequest(req, res);
     } else if (url.pathname === "/sse") {
       console.log("Got new SSE connection");
 
