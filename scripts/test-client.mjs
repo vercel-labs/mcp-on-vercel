@@ -4,12 +4,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 const origin = process.argv[2] || "https://mcp-on-vercel.vercel.app";
 
 async function main() {
-  const transport = new StreamableHTTPClientTransport(
-    new URL(`${origin}/mcp`),
-    {
-      sessionId: "test-session",
-    }
-  );
+  const transport = new StreamableHTTPClientTransport(new URL(`${origin}/mcp`));
 
   const client = new Client(
     {
@@ -26,11 +21,6 @@ async function main() {
   );
 
   await client.connect(transport);
-
-  console.log("Connected", client.getServerCapabilities());
-
-  const result = await client.listTools();
-  console.log(result);
 }
 
 main();
