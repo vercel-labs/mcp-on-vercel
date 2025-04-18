@@ -53,7 +53,7 @@ export function initializeMcpApiHandler(
     const url = new URL(req.url || "", "https://example.com");
     if (url.pathname === "/mcp") {
       const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: undefined,
+        sessionIdGenerator: () => crypto.randomUUID(),
       });
 
       if (!statelessServer) {
