@@ -1,6 +1,7 @@
 import getRawBody from "raw-body";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { IncomingHttpHeaders, IncomingMessage, ServerResponse } from "http";
 import { createClient } from "redis";
 import { Socket } from "net";
@@ -42,13 +43,32 @@ export function initializeMcpApiHandler(
 
   let servers: McpServer[] = [];
 
+  let statelessServer: McpServer;
+
   return async function mcpApiHandler(
     req: IncomingMessage,
     res: ServerResponse
   ) {
     await redisPromise;
     const url = new URL(req.url || "", "https://example.com");
-    if (url.pathname === "/sse") {
+    if (url.pathname === "/mcp") {
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+      });
+
+      if (!statelessServer) {
+        statelessServer = new McpServer(
+          {
+            name: "mcp-typescript server on vercel",
+            version: "0.1.0",
+          },
+          serverOptions
+        );
+      }
+      // Connect to server and handle the request
+      await statelessServer.connect(transport);
+      await transport.handleRequest(req, res);
+    } else if (url.pathname === "/sse") {
       console.log("Got new SSE connection");
 
       const transport = new SSEServerTransport("/message", res);
