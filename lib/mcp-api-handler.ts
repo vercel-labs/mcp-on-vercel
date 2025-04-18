@@ -67,9 +67,9 @@ export function initializeMcpApiHandler(
         );
 
         initializeServer(statelessServer);
-        // @ts-ignore
-        statelessServer._initialized = true;
       }
+      // @ts-ignore
+      transport._initialized = true;
       // Connect to server and handle the request
       await statelessServer.connect(transport);
       await transport.handleRequest(req, res);
