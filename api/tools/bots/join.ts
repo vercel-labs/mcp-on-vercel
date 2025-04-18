@@ -110,28 +110,42 @@ export function registerJoinTool(
     async (params) => {
       try {
         // Create the join request object that matches the SDK's expected format
-        const joinRequest = {
-          meetingUrl: params.meetingUrl,
-          botName: params.botName,
-          botImage: params.botImage,
-          webhookUrl: params.webhookUrl,
-          recordingMode: params.recordingMode || "speaker_view",
-          speechToText: params.speechToText && {
-            provider: params.speechToText.provider,
-            apiKey: params.speechToText.apiKey,
-          },
-          reserved: params.reserved,
+        // Need to cast to any due to field name differences between our snake_case and the SDK types
+        const joinRequest: any = {
+          meeting_url: params.meetingUrl,
+          bot_name: params.botName,
+          bot_image:
+            params.botImage ||
+            "https://meetingbaas.com/static/a3e9f3dbde935920a3558317a514ff1a/b5380/preview.png",
+          webhook_url: params.webhookUrl,
+          recording_mode: params.recordingMode || "speaker_view",
+          speech_to_text: params.speechToText
+            ? {
+                provider:
+                  params.speechToText.provider === "default"
+                    ? "Default"
+                    : params.speechToText.provider === "gladia"
+                    ? "Gladia"
+                    : params.speechToText.provider === "runpod"
+                    ? "Runpod"
+                    : "Default",
+                api_key: params.speechToText.apiKey,
+              }
+            : {
+                provider: "Default",
+              },
+          reserved: params.reserved || false,
           streaming: params.streaming && {
             input: params.streaming.input,
             output: params.streaming.output,
-            audioFrequency: params.streaming.audioFrequency,
+            audio_frequency: params.streaming.audioFrequency,
           },
-          automaticLeave: params.automaticLeave && {
-            nooneJoinedTimeout: params.automaticLeave.nooneJoinedTimeout,
-            waitingRoomTimeout: params.automaticLeave.waitingRoomTimeout,
+          automatic_leave: params.automaticLeave && {
+            noone_joined_timeout: params.automaticLeave.nooneJoinedTimeout,
+            waiting_room_timeout: params.automaticLeave.waitingRoomTimeout,
           },
-          startTime: params.startTime,
-          deduplicationKey: params.deduplicationKey,
+          start_time: params.startTime,
+          deduplication_key: params.deduplicationKey,
           extra: params.extra,
         };
 
@@ -140,13 +154,16 @@ export function registerJoinTool(
           joinRequest,
         });
 
-        if (response.data?.botId) {
+        // Type assertion to handle the snake_case vs camelCase mismatch
+        const responseData = response.data as unknown as { bot_id?: string };
+
+        if (responseData?.bot_id) {
           return {
             content: [
               {
                 type: "text",
                 text: `Successfully joined meeting with bot ID: ${
-                  response.data.botId
+                  responseData.bot_id
                 } (Speech-to-text enabled by default using ${
                   params.speechToText?.provider || "default"
                 } provider)`,
@@ -167,9 +184,51 @@ export function registerJoinTool(
       } catch (error) {
         console.error("Failed to join meeting:", error);
 
+        // Log the request payload that was sent
+        console.error(
+          "Request payload:",
+          JSON.stringify(
+            {
+              meetingUrl: params.meetingUrl,
+              botName: params.botName,
+              botImage: params.botImage,
+              // Include other relevant fields
+              recordingMode: params.recordingMode,
+              reserved: params.reserved,
+              speechToText: params.speechToText,
+            },
+            null,
+            2
+          )
+        );
+
         let errorMessage = "Failed to join meeting: ";
+
+        // Type for axios error that includes response
+        type AxiosErrorWithResponse = Error & {
+          response?: {
+            status: number;
+            data: any;
+          };
+        };
+
         if (error instanceof Error) {
           errorMessage += error.message;
+
+          // Check for axios error with response data using type assertion
+          const axiosError = error as AxiosErrorWithResponse;
+          if (axiosError.response && axiosError.response.data) {
+            console.error("Error response status:", axiosError.response.status);
+            console.error(
+              "Error response data:",
+              JSON.stringify(axiosError.response.data, null, 2)
+            );
+            errorMessage += ` - ${JSON.stringify(
+              axiosError.response.data,
+              null,
+              2
+            )}`;
+          }
         } else if (typeof error === "string") {
           errorMessage += error;
         } else {
