@@ -55,6 +55,34 @@ export function initializeMcpApiHandler(
     await redisPromise;
     const url = new URL(req.url || "", "https://example.com");
     if (url.pathname === "/mcp") {
+      if (req.method === "GET") {
+        console.log("Received GET MCP request");
+        res.writeHead(405).end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            error: {
+              code: -32000,
+              message: "Method not allowed.",
+            },
+            id: null,
+          })
+        );
+        return;
+      }
+      if (req.method === "DELETE") {
+        console.log("Received DELETE MCP request");
+        res.writeHead(405).end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            error: {
+              code: -32000,
+              message: "Method not allowed.",
+            },
+            id: null,
+          })
+        );
+        return;
+      }
       console.log("Got new MCP connection", req.url, req.method);
 
       if (!statelessServer) {
