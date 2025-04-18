@@ -44,6 +44,9 @@ export function initializeMcpApiHandler(
   let servers: McpServer[] = [];
 
   let statelessServer: McpServer;
+  const statelessTransport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+  });
 
   return async function mcpApiHandler(
     req: IncomingMessage,
@@ -53,9 +56,6 @@ export function initializeMcpApiHandler(
     const url = new URL(req.url || "", "https://example.com");
     if (url.pathname === "/mcp") {
       console.log("Got new MCP connection", req.url, req.method);
-      const statelessTransport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: undefined,
-      });
 
       if (!statelessServer) {
         statelessServer = new McpServer(
@@ -67,8 +67,8 @@ export function initializeMcpApiHandler(
         );
 
         initializeServer(statelessServer);
+        await statelessServer.connect(statelessTransport);
       }
-      await statelessServer.connect(statelessTransport);
       await statelessTransport.handleRequest(req, res);
     } else if (url.pathname === "/sse") {
       console.log("Got new SSE connection");
