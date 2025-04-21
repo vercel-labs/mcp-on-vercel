@@ -2,8 +2,9 @@ import { BaasClient } from "@meeting-baas/sdk/dist/baas/api/client";
 import { Provider } from "@meeting-baas/sdk/dist/baas/models/provider";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import z from "zod";
-import { registerBotTools } from "./tools/bots/index";
+// import { registerBotTools } from "./tools/bots/index";
 import { registerEchoTool } from "./tools/utils/echo";
+import { registerJoinSpeakingTool } from "./tools/bots/join-speaking";
 
 export function registerTools(server: McpServer, apiKey: string): McpServer {
   const baasClient = new BaasClient({
@@ -12,7 +13,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
   });
 
   // Register bot tools
-  const updatedServer = registerBotTools(server);
+  let updatedServer = registerJoinSpeakingTool(server);
 
   // For Leave Meeting
   updatedServer.tool(
@@ -22,7 +23,6 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ botId }: { botId: string }) => {
       try {
         console.log(`Attempting to remove bot ${botId} from meeting...`);
-        //
         const response = await baasClient.defaultApi.leave({
           params: { uuid: botId },
         });
