@@ -2,9 +2,9 @@ import { BaasClient } from "@meeting-baas/sdk/dist/baas/api/client";
 import { Provider } from "@meeting-baas/sdk/dist/baas/models/provider";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import z from "zod";
-// import { registerBotTools } from "./tools/bots/index";
+import { registerBotTools } from "./tools/bots/index";
 import { registerEchoTool } from "./tools/utils/echo";
-import { registerJoinSpeakingTool } from "./tools/bots/join-speaking";
+// import { registerJoinSpeakingTool } from "./tools/bots/join-speaking";
 
 export function registerTools(server: McpServer, apiKey: string): McpServer {
   const baasClient = new BaasClient({
@@ -13,7 +13,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
   });
 
   // Register bot tools
-  let updatedServer = registerJoinSpeakingTool(server);
+  let updatedServer = registerBotTools(server, baasClient);
 
   // For Leave Meeting
   updatedServer.tool(
