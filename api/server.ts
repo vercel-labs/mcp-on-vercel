@@ -9,56 +9,82 @@ const handler = initializeMcpApiHandler(
   {
     capabilities: {
       tools: {
+        // Meeting Management Category
         joinMeeting: {
-          description: "Join's a meeting using the MeetingBaas api",
-        },
-        leaveMeeting: {
-          description: "Leave a meeting using the MeetingBaas api",
-        },
-        getMeetingData: {
-          description: "Get meeting data using the MeetingBaas api",
-        },
-        deleteData: {
-          description: "Delete meeting data using the MeetingBaas api",
-        },
-        createCalendar: {
-          description: "Create a calendar using the MeetingBaas api",
-        },
-        listCalendars: {
-          description: "List calendars using the MeetingBaas api",
-        },
-        getCalendar: {
-          description: "Get calendar using the MeetingBaas api",
-        },
-        deleteCalendar: {
-          description: "Delete calendar using the MeetingBaas api",
-        },
-        resyncAllCalendars: {
-          description: "Resync all calendars using the MeetingBaas api",
-        },
-        botsWithMetadata: {
-          description: "Get bots with metadata using the MeetingBaas api",
-        },
-        listEvents: {
-          description: "List events using the MeetingBaas api",
-        },
-        scheduleRecordEvent: {
-          description: "Schedule a recording using the MeetingBaas api",
-        },
-        unscheduleRecordEvent: {
-          description: "Unschedule a recording using the MeetingBaas api",
-        },
-        updateCalendar: {
-          description: "Update calendar using the MeetingBaas api",
+          description:
+            "Send an AI bot to join a video meeting. The bot can record the meeting, transcribe speech (enabled by default using Gladia), and provide real-time audio streams.",
+          category: "Meeting Management",
         },
         joinSpeakingMeeting: {
-          description: "Join a speaking meeting using the MeetingBaas api",
+          description:
+            "Send an AI speaking bot to join a video meeting. The bot can assist in meetings with voice AI capabilities.",
+          category: "Meeting Management",
+        },
+        leaveMeeting: {
+          description: "Remove an AI bot from a meeting.",
+          category: "Meeting Management",
         },
         leaveSpeakingMeeting: {
-          description: "Leave a speaking meeting using the MeetingBaas api",
+          description: "Remove a speaking bot from a meeting by its ID.",
+          category: "Meeting Management",
         },
+        getMeetingData: {
+          description: "Get data about a meeting that a bot has joined.",
+          category: "Meeting Management",
+        },
+        deleteData: {
+          description: "Delete data associated with a meeting bot.",
+          category: "Meeting Management",
+        },
+
+        // Calendar Management Category
+        createCalendar: {
+          description: "Create a new calendar integration.",
+          category: "Calendar Management",
+        },
+        listCalendars: {
+          description: "List all calendar integrations.",
+          category: "Calendar Management",
+        },
+        getCalendar: {
+          description: "Get details about a specific calendar integration.",
+          category: "Calendar Management",
+        },
+        deleteCalendar: {
+          description: "Delete a calendar integration.",
+          category: "Calendar Management",
+        },
+        resyncAllCalendars: {
+          description: "Resynchronize all calendar integrations.",
+          category: "Calendar Management",
+        },
+        listEvents: {
+          description: "List all scheduled events.",
+          category: "Calendar Management",
+        },
+        scheduleRecordEvent: {
+          description: "Schedule a recording.",
+          category: "Calendar Management",
+        },
+        unscheduleRecordEvent: {
+          description: "Cancel a scheduled recording.",
+          category: "Calendar Management",
+        },
+        updateCalendar: {
+          description: "Update a calendar integration configuration.",
+          category: "Calendar Management",
+        },
+
+        // Bot Management Category
+        botsWithMetadata: {
+          description: "Get a list of all bots with their metadata.",
+          category: "Bot Management",
+        },
+
+        // Utility Category
         echo: {
-          description: "Echo a message",
+          description: "Echo a message back.",
+          category: "Utility",
         },
       },
     },
