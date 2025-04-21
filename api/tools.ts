@@ -12,9 +12,9 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
   });
 
   // Register bot tools
-  const updatedServer = registerBotTools(server, baasClient);
+  const updatedServer = registerBotTools(server);
 
-  // Register Meeting BaaS SDK tools
+  // For Leave Meeting
   updatedServer.tool(
     "leaveMeeting",
     "Remove an AI bot from a meeting. Use this when you want to: 1) End a meeting recording 2) Stop transcription 3) Disconnect the bot from the meeting",
@@ -80,6 +80,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Get Meeting Data
   updatedServer.tool(
     "getMeetingData",
     "Get data about a meeting that a bot has joined. Use this when you want to: 1) Check meeting status 2) Get recording information 3) Access transcription data",
@@ -111,6 +112,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Delete Data
   updatedServer.tool(
     "deleteData",
     "Delete data associated with a meeting bot. Use this when you want to: 1) Remove meeting recordings 2) Delete transcription data 3) Clean up bot data",
@@ -143,6 +145,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Create Calendar
   updatedServer.tool(
     "createCalendar",
     "Create a new calendar integration. Use this when you want to: 1) Set up automatic meeting recordings 2) Configure calendar-based bot scheduling 3) Enable recurring meeting coverage",
@@ -197,6 +200,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For List Calendar
   updatedServer.tool(
     "listCalendars",
     "List all calendar integrations. Use this when you want to: 1) View configured calendars 2) Check calendar status 3) Manage calendar integrations",
@@ -227,6 +231,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Get Calendar
   updatedServer.tool(
     "getCalendar",
     "Get details about a specific calendar integration. Use this when you want to: 1) View calendar configuration 2) Check calendar status 3) Verify calendar settings",
@@ -260,6 +265,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For delete Calendar
   updatedServer.tool(
     "deleteCalendar",
     "Delete a calendar integration. Use this when you want to: 1) Remove a calendar connection 2) Stop automatic recordings 3) Clean up calendar data",
@@ -293,6 +299,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Re sysnc all Calendar
   updatedServer.tool(
     "resyncAllCalendars",
     "Resynchronize all calendar integrations. Use this when you want to: 1) Update calendar data 2) Fix sync issues 3) Refresh calendar connections",
@@ -323,6 +330,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Bots with meta data
   updatedServer.tool(
     "botsWithMetadata",
     "Get a list of all bots with their metadata. Use this when you want to: 1) View active bots 2) Check bot status 3) Monitor bot activity",
@@ -354,6 +362,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For List All Events
   updatedServer.tool(
     "listEvents",
     "List all scheduled events. Use this when you want to: 1) View upcoming recordings 2) Check scheduled transcriptions 3) Monitor planned bot activity",
@@ -387,6 +396,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Schedule Record Events
   updatedServer.tool(
     "scheduleRecordEvent",
     "Schedule a recording. Use this when you want to: 1) Set up automatic recording 2) Schedule future transcriptions 3) Plan meeting recordings",
@@ -437,6 +447,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Un-Schedule Record Events
   updatedServer.tool(
     "unscheduleRecordEvent",
     "Cancel a scheduled recording. Use this when you want to: 1) Cancel automatic recording 2) Stop planned transcription 3) Remove scheduled bot activity",
@@ -479,6 +490,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     }
   );
 
+  // For Update Calendar
   updatedServer.tool(
     "updateCalendar",
     "Update a calendar integration configuration. Use this when you want to: 1) Modify calendar settings 2) Update connection details 3) Change calendar configuration",

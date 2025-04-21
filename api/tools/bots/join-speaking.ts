@@ -102,6 +102,7 @@ interface JoinResponse {
 }
 
 export function registerJoinSpeakingTool(server: McpServer): McpServer {
+  // For Join Speaking Meeting
   server.tool(
     "joinSpeakingMeeting",
     "Send an AI speaking bot to join a video meeting. The bot can assist in meetings with voice AI capabilities.",
@@ -207,7 +208,7 @@ export function registerJoinSpeakingTool(server: McpServer): McpServer {
     }
   );
 
-  // Add a leave meeting tool for the speaking bot
+  // For Leave Speaking Meeting
   server.tool(
     "leaveSpeakingMeeting",
     "Remove a speaking bot from a meeting by its ID.",
