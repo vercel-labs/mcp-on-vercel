@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { initializeMcpApiHandler } from "../lib/mcp-api-handler";
 
-const handler = initializeMcpApiHandler(
+export default initializeMcpApiHandler(
   (server) => {
     // Add more tools, resources, and prompts here
     server.tool("echo", { message: z.string() }, async ({ message }) => ({
@@ -18,5 +18,3 @@ const handler = initializeMcpApiHandler(
     },
   }
 );
-
-export default handler;
