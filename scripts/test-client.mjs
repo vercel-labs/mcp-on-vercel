@@ -1,10 +1,10 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 
 const origin = process.argv[2] || "https://mcp-on-vercel.vercel.app";
 
 async function main() {
-  const transport = new StreamableHTTPClientTransport(new URL(`${origin}/mcp`));
+  const transport = new SSEClientTransport(new URL(`${origin}/sse`));
 
   const client = new Client(
     {
@@ -28,5 +28,4 @@ async function main() {
   console.log(result);
 }
 
-main();
 main();
