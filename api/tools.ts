@@ -24,7 +24,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
       try {
         console.log(`Attempting to remove bot ${botId} from meeting...`);
         const response = await baasClient.defaultApi.leave({
-          params: { uuid: botId },
+          uuid: botId
         });
         console.log(
           "Leave meeting response:",
@@ -120,7 +120,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ botId }: { botId: string }) => {
       try {
         const response = await baasClient.defaultApi.deleteData({
-          params: { uuid: botId },
+          uuid: botId
         });
         return {
           content: [
@@ -238,9 +238,8 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     { calendarId: z.string() },
     async ({ calendarId }: { calendarId: string }) => {
       try {
-        //
         const response = await baasClient.calendarsApi.getCalendar({
-          params: { uuid: calendarId },
+          uuid: calendarId
         });
         return {
           content: [
@@ -272,9 +271,8 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     { calendarId: z.string() },
     async ({ calendarId }: { calendarId: string }) => {
       try {
-        //
         const response = await baasClient.calendarsApi.deleteCalendar({
-          params: { uuid: calendarId },
+          uuid: calendarId
         });
         return {
           content: [
@@ -291,37 +289,6 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
             {
               type: "text",
               text: "Failed to delete calendar",
-            },
-          ],
-          isError: true,
-        };
-      }
-    }
-  );
-
-  // For Re sysnc all Calendar
-  updatedServer.tool(
-    "resyncAllCalendars",
-    "Resynchronize all calendar integrations. Use this when you want to: 1) Update calendar data 2) Fix sync issues 3) Refresh calendar connections",
-    {},
-    async () => {
-      try {
-        const response = await baasClient.calendarsApi.resyncAllCalendars();
-        return {
-          content: [
-            {
-              type: "text",
-              text: "Successfully resynced all calendars",
-            },
-          ],
-        };
-      } catch (error) {
-        console.error("Failed to resync calendars:", error);
-        return {
-          content: [
-            {
-              type: "text",
-              text: "Failed to resync calendars",
             },
           ],
           isError: true,
@@ -413,16 +380,11 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
           extra: extra || {},
         };
 
-        //
-        const response = await baasClient.calendarsApi.scheduleRecordEvent(
-          {
-            botParam2: botParams,
-            allOccurrences: allOccurrences || false,
-          },
-          {
-            params: { uuid: eventUuid },
-          }
-        );
+        const response = await baasClient.calendarsApi.scheduleRecordEvent({
+          uuid: eventUuid,
+          botParam2: botParams,
+          allOccurrences: allOccurrences || false
+        });
 
         return {
           content: [
@@ -457,15 +419,10 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     },
     async ({ eventUuid, allOccurrences }) => {
       try {
-        //
-        const response = await baasClient.calendarsApi.unscheduleRecordEvent(
-          {
-            allOccurrences: allOccurrences || false,
-          },
-          {
-            params: { uuid: eventUuid },
-          }
-        );
+        const response = await baasClient.calendarsApi.unscheduleRecordEvent({
+          uuid: eventUuid,
+          allOccurrences: allOccurrences || false
+        });
 
         return {
           content: [
@@ -517,9 +474,9 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
             platform === "Google" ? Provider.google : Provider.microsoft,
         };
 
-        //
         const response = await baasClient.calendarsApi.updateCalendar({
-          updateCalendarParams: updateParams,
+          uuid: calendarId,
+          updateCalendarParams: updateParams
         });
 
         return {
