@@ -1,7 +1,6 @@
 import { ServerOptions as McpServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { IncomingHttpHeaders, IncomingMessage, ServerResponse } from "http";
 import { Socket } from "net";
 import getRawBody from "raw-body";
@@ -11,6 +10,7 @@ import z from "zod";
 import vercelJson from "../vercel.json";
 import { RedisClientType } from "redis";
 import { registerTools } from "../api/tools.js";
+import { randomUUID } from "node:crypto";
 
 interface ServerOptions extends McpServerOptions {
   parameters?: {
@@ -53,9 +53,7 @@ export function initializeMcpApiHandler(
   let servers: McpServer[] = [];
 
   let statelessServer: McpServer;
-  const statelessTransport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  });
+  let statelessTransport: SSEServerTransport | null = null;
 
   return async function mcpApiHandler(
     req: IncomingMessage,
@@ -155,9 +153,14 @@ export function initializeMcpApiHandler(
           console.error("Error initializing server:", error);
           // Continue without failing - authentication is optional
         }
+      }
+
+      if (!statelessTransport) {
+        statelessTransport = new SSEServerTransport("/message", res);
         await statelessServer.connect(statelessTransport);
       }
-      await statelessTransport.handleRequest(req, res);
+
+      await statelessTransport.handlePostMessage(req, res);
     } else if (url.pathname === "/sse") {
       console.log("Got new SSE connection");
 
