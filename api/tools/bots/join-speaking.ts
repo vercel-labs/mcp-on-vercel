@@ -397,7 +397,7 @@ export function registerJoinSpeakingTool(
             content: [
               {
                 type: "text",
-                text: `Successfully generated image for persona: ${params.name}`,
+                text: `Successfully generated image for persona: ${params.name}\n\nImage URL: ${response.data.image_url}`,
               },
               {
                 type: "image",
