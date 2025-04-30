@@ -1,23 +1,33 @@
 {
-  "name": "mcp-on-vercel",
+  "name": "meetingbaas-mcp",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "node -r dotenv/config dist/api/server.js",
+    "dev": "tsc --watch & node -r dotenv/config dist/api/server.js",
+    "test-client": "tsc && node dist/scripts/test-client.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@8.15.7+sha512.c85cd21b6da10332156b1ca2aa79c0a61ee7ad2eb0453b88ab299289e9e8ca93e6091232b25c07cbf61f6df77128d9c849e5c9ac6e44854dbd211c49f3a67adc",
   "dependencies": {
+    "@meeting-baas/sdk": "^4.0.5",
     "@modelcontextprotocol/sdk": "^1.10.2",
+    "axios": "^1.8.4",
     "content-type": "^1.0.5",
+    "dotenv": "^16.4.5",
     "raw-body": "^3.0.0",
     "redis": "^4.7.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10"
+    "@types/node": "^20.17.30",
+    "tsup": "^8.4.0",
+    "typescript": "^5.3.3"
   }
 }

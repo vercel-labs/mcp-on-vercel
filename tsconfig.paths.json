@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@meeting-baas/sdk": ["node_modules/@meeting-baas/sdk"]
+    }
+  }
+}

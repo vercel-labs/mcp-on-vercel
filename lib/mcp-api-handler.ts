@@ -1,13 +1,22 @@
-import getRawBody from "raw-body";
+import { ServerOptions as McpServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { IncomingHttpHeaders, IncomingMessage, ServerResponse } from "http";
-import { createClient } from "redis";
 import { Socket } from "net";
+import getRawBody from "raw-body";
+import { createClient } from "redis";
 import { Readable } from "stream";
-import { ServerOptions } from "@modelcontextprotocol/sdk/server/index.js";
+import z from "zod";
 import vercelJson from "../vercel.json";
+import { RedisClientType } from "redis";
+import { registerTools } from "../api/tools.js";
+import { randomUUID } from "node:crypto";
+
+interface ServerOptions extends McpServerOptions {
+  parameters?: {
+    schema: z.ZodSchema;
+  };
+}
 
 interface SerializedRequest {
   requestId: string;
@@ -18,7 +27,7 @@ interface SerializedRequest {
 }
 
 export function initializeMcpApiHandler(
-  initializeServer: (server: McpServer) => void,
+  initializeServer: (server: McpServer, apiKey: string) => void,
   serverOptions: ServerOptions = {}
 ) {
   const maxDuration =
@@ -44,16 +53,60 @@ export function initializeMcpApiHandler(
   let servers: McpServer[] = [];
 
   let statelessServer: McpServer;
-  const statelessTransport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  });
+  let statelessTransport: SSEServerTransport | null = null;
 
   return async function mcpApiHandler(
     req: IncomingMessage,
     res: ServerResponse
   ) {
     await redisPromise;
-    const url = new URL(req.url || "", "https://example.com");
+    const url = new URL(req.url || "", "https://mcp.meetingbaas.com");
+
+    // Skip validation for static files
+    if (url.pathname.endsWith(".ico") || url.pathname.endsWith(".png")) {
+      return;
+    }
+
+    // Only validate API key for SSE and chat endpoints
+    let apiKey: string | null = null;
+    if (url.pathname === "/sse" || url.pathname === "/message") {
+      // Try schema-based validation first if available
+      if (
+        serverOptions.parameters?.schema &&
+        req.method === "POST" &&
+        req.headers["content-length"]
+      ) {
+        try {
+          const body = await getRawBody(req, {
+            length: req.headers["content-length"],
+            encoding: "utf-8",
+          });
+          const params = JSON.parse(body);
+          const result = serverOptions.parameters.schema.safeParse(params);
+          if (result.success) {
+            apiKey = result.data.apiKey;
+          }
+        } catch (error) {
+          console.error("Error parsing parameters:", error);
+        }
+      }
+
+      // If schema validation failed or not available, try headers
+      if (!apiKey) {
+        apiKey =
+          (req.headers["x-meeting-baas-api-key"] as string) ||
+          (req.headers["x-meetingbaas-apikey"] as string) ||
+          (req.headers["x-api-key"] as string) ||
+          (req.headers["authorization"] as string)?.replace(/bearer\s+/i, "") ||
+          (process.env.NODE_ENV === "development"
+            ? process.env.BAAS_API_KEY
+            : null) ||
+          null;
+      }
+
+      // Authentication is optional, so we don't return an error if no API key is found
+    }
+
     if (url.pathname === "/mcp") {
       if (req.method === "GET") {
         console.log("Received GET MCP request");
@@ -94,10 +147,20 @@ export function initializeMcpApiHandler(
           serverOptions
         );
 
-        initializeServer(statelessServer);
+        try {
+          initializeServer(statelessServer, apiKey || "");
+        } catch (error) {
+          console.error("Error initializing server:", error);
+          // Continue without failing - authentication is optional
+        }
+      }
+
+      if (!statelessTransport) {
+        statelessTransport = new SSEServerTransport("/message", res);
         await statelessServer.connect(statelessTransport);
       }
-      await statelessTransport.handleRequest(req, res);
+
+      await statelessTransport.handlePostMessage(req, res);
     } else if (url.pathname === "/sse") {
       console.log("Got new SSE connection");
 
@@ -110,7 +173,13 @@ export function initializeMcpApiHandler(
         },
         serverOptions
       );
-      initializeServer(server);
+
+      try {
+        initializeServer(server, apiKey || "");
+      } catch (error) {
+        console.error("Error initializing server:", error);
+        // Continue without failing - authentication is optional
+      }
 
       servers.push(server);
 
@@ -322,7 +391,7 @@ function createFakeIncomingMessage(
   // Copy over the stream methods
   req.push = readable.push.bind(readable);
   req.read = readable.read.bind(readable);
-  req.on = readable.on.bind(readable);
+  req.on = readable.on.bind(readable) as IncomingMessage["on"];
   req.pipe = readable.pipe.bind(readable);
 
   return req;
