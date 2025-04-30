@@ -4,7 +4,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import z from "zod";
 import { registerBotTools } from "./tools/bots/index";
 import { registerEchoTool } from "./tools/utils/echo";
-// import { registerJoinSpeakingTool } from "./tools/bots/join-speaking";
 
 export function registerTools(server: McpServer, apiKey: string): McpServer {
   const baasClient = new BaasClient({
@@ -24,7 +23,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
       try {
         console.log(`Attempting to remove bot ${botId} from meeting...`);
         const response = await baasClient.defaultApi.leave({
-          uuid: botId
+          uuid: botId,
         });
         console.log(
           "Leave meeting response:",
@@ -120,7 +119,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ botId }: { botId: string }) => {
       try {
         const response = await baasClient.defaultApi.deleteData({
-          uuid: botId
+          uuid: botId,
         });
         return {
           content: [
@@ -239,7 +238,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ calendarId }: { calendarId: string }) => {
       try {
         const response = await baasClient.calendarsApi.getCalendar({
-          uuid: calendarId
+          uuid: calendarId,
         });
         return {
           content: [
@@ -272,7 +271,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
     async ({ calendarId }: { calendarId: string }) => {
       try {
         const response = await baasClient.calendarsApi.deleteCalendar({
-          uuid: calendarId
+          uuid: calendarId,
         });
         return {
           content: [
@@ -383,7 +382,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
         const response = await baasClient.calendarsApi.scheduleRecordEvent({
           uuid: eventUuid,
           botParam2: botParams,
-          allOccurrences: allOccurrences || false
+          allOccurrences: allOccurrences || false,
         });
 
         return {
@@ -421,7 +420,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
       try {
         const response = await baasClient.calendarsApi.unscheduleRecordEvent({
           uuid: eventUuid,
-          allOccurrences: allOccurrences || false
+          allOccurrences: allOccurrences || false,
         });
 
         return {
@@ -476,7 +475,7 @@ export function registerTools(server: McpServer, apiKey: string): McpServer {
 
         const response = await baasClient.calendarsApi.updateCalendar({
           uuid: calendarId,
-          updateCalendarParams: updateParams
+          updateCalendarParams: updateParams,
         });
 
         return {

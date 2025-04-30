@@ -89,7 +89,7 @@ const AVAILABLE_PERSONAS = [
 interface BotRequest {
   meeting_url: string;
   bot_name: string;
-  meeting_baas_api_key: string;
+  meeting_baas_api_key?: string; // Now optional since we can use header auth
   personas?: string[] | null;
   bot_image?: string | null;
   entry_message?: string | null;
@@ -101,7 +101,23 @@ interface JoinResponse {
   bot_id: string;
 }
 
-export function registerJoinSpeakingTool(server: McpServer): McpServer {
+interface PersonaImageRequest {
+  name: string;
+  description?: string | null;
+  gender?: string | null;
+  characteristics?: string[] | null;
+}
+
+interface PersonaImageResponse {
+  name: string;
+  image_url: string;
+  generated_at: string;
+}
+
+export function registerJoinSpeakingTool(
+  server: McpServer,
+  apiKey?: string
+): McpServer {
   // For Join Speaking Meeting
   server.tool(
     "joinSpeakingMeeting",
@@ -113,7 +129,10 @@ export function registerJoinSpeakingTool(server: McpServer): McpServer {
         .describe("Name to display for the bot in the meeting"),
       meetingBaasApiKey: z
         .string()
-        .describe("Your MeetingBaas API key for authentication"),
+        .optional()
+        .describe(
+          "Your MeetingBaas API key for authentication. If not provided, will use the server's configured API key."
+        ),
       personas: z
         .array(z.string())
         .optional()
@@ -145,11 +164,27 @@ export function registerJoinSpeakingTool(server: McpServer): McpServer {
     },
     async (params) => {
       try {
+        // Get API key from params or use the one provided to the registration function
+        const authKey = params.meetingBaasApiKey || apiKey;
+
+        if (!authKey) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: "No API key provided. Please provide a meetingBaasApiKey parameter or configure the server with an API key.",
+              },
+            ],
+            isError: true,
+          };
+        }
+
         // Create the bot request according to the new schema
         const botRequest: BotRequest = {
           meeting_url: params.meetingUrl,
           bot_name: params.botName,
-          meeting_baas_api_key: params.meetingBaasApiKey,
+          // Include API key in body for backward compatibility
+          meeting_baas_api_key: authKey,
           personas: params.personas || null,
           bot_image: params.botImage || null,
           entry_message: params.entryMessage || null,
@@ -157,10 +192,16 @@ export function registerJoinSpeakingTool(server: McpServer): McpServer {
           extra: params.extra || null,
         };
 
-        // Make a direct API call to the new endpoint
+        // Make a direct API call to the new endpoint using the newer header-based auth
         const response = await axios.post<JoinResponse>(
           `${SPEAKING_API_URL}/bots`,
-          botRequest
+          botRequest,
+          {
+            headers: {
+              "x-meeting-baas-api-key": authKey, // New header-based auth
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (response.data.bot_id) {
@@ -218,17 +259,39 @@ export function registerJoinSpeakingTool(server: McpServer): McpServer {
         .describe("The MeetingBaas bot ID to remove from the meeting"),
       meetingBaasApiKey: z
         .string()
-        .describe("Your MeetingBaas API key for authentication"),
+        .optional()
+        .describe(
+          "Your MeetingBaas API key for authentication. If not provided, will use the server's configured API key."
+        ),
     },
     async (params) => {
       try {
+        // Get API key from params or use the one provided to the registration function
+        const authKey = params.meetingBaasApiKey || apiKey;
+
+        if (!authKey) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: "No API key provided. Please provide a meetingBaasApiKey parameter or configure the server with an API key.",
+              },
+            ],
+            isError: true,
+          };
+        }
+
         const leaveRequest = {
-          meeting_baas_api_key: params.meetingBaasApiKey,
+          meeting_baas_api_key: authKey, // Include for backward compatibility
           bot_id: params.botId,
         };
 
         await axios.delete(`${SPEAKING_API_URL}/bots/${params.botId}`, {
           data: leaveRequest,
+          headers: {
+            "x-meeting-baas-api-key": authKey, // New header-based auth
+            "Content-Type": "application/json",
+          },
         });
 
         return {
@@ -243,6 +306,121 @@ export function registerJoinSpeakingTool(server: McpServer): McpServer {
         console.error("Failed to remove speaking bot from meeting:", error);
 
         let errorMessage = "Failed to remove speaking bot: ";
+        if (error instanceof Error) {
+          errorMessage += error.message;
+        } else if (typeof error === "string") {
+          errorMessage += error;
+        } else {
+          errorMessage += "Unknown error occurred";
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: errorMessage,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // For Generate Persona Image
+  server.tool(
+    "generatePersonaImage",
+    "Generate an image for a persona using Replicate.",
+    {
+      name: z.string().describe("Name of the persona"),
+      description: z.string().optional().describe("Description of the persona"),
+      gender: z.string().optional().describe("Gender of the persona"),
+      characteristics: z
+        .array(z.string())
+        .optional()
+        .describe("List of characteristics like blue eyes, etc."),
+      meetingBaasApiKey: z
+        .string()
+        .optional()
+        .describe(
+          "Your MeetingBaas API key for authentication. If not provided, will use the server's configured API key."
+        ),
+    },
+    async (params) => {
+      try {
+        // Get API key from params or use the one provided to the registration function
+        const authKey = params.meetingBaasApiKey || apiKey;
+
+        if (!authKey) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: "No API key provided. Please provide a meetingBaasApiKey parameter or configure the server with an API key.",
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        const imageRequest: PersonaImageRequest = {
+          name: params.name,
+          description: params.description || null,
+          gender: params.gender || null,
+          characteristics: params.characteristics || null,
+        };
+
+        const response = await axios.post<PersonaImageResponse>(
+          `${SPEAKING_API_URL}/personas/generate-image`,
+          imageRequest,
+          {
+            headers: {
+              "x-meeting-baas-api-key": authKey, // New header-based auth
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data.image_url) {
+          // Fetch the image to get its data
+          const imageResponse = await axios.get(response.data.image_url, {
+            responseType: "arraybuffer",
+          });
+
+          // Convert the image data to base64
+          const base64Image = Buffer.from(imageResponse.data).toString(
+            "base64"
+          );
+          const mimeType = "image/jpeg"; // Assuming JPEG, adjust if needed
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully generated image for persona: ${params.name}`,
+              },
+              {
+                type: "image",
+                data: `data:${mimeType};base64,${base64Image}`,
+                mimeType,
+              },
+            ],
+          };
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Failed to generate persona image",
+            },
+          ],
+          isError: true,
+        };
+      } catch (error) {
+        console.error("Failed to generate persona image:", error);
+
+        let errorMessage = "Failed to generate persona image: ";
         if (error instanceof Error) {
           errorMessage += error.message;
         } else if (typeof error === "string") {
