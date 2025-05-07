@@ -1,22 +1,10 @@
 import { z } from "zod";
-import { initializeMcpApiHandler } from "../lib/mcp-api-handler";
+import createMcpApiHandler from "@vercel/mcp-adapter/next";
 
-const handler = initializeMcpApiHandler(
-  (server) => {
-    // Add more tools, resources, and prompts here
-    server.tool("echo", { message: z.string() }, async ({ message }) => ({
-      content: [{ type: "text", text: `Tool echo: ${message}` }],
-    }));
-  },
-  {
-    capabilities: {
-      tools: {
-        echo: {
-          description: "Echo a message",
-        },
-      },
-    },
-  }
-);
+const handler = createMcpApiHandler((server) => {
+  server.tool("echo", { message: z.string() }, async ({ message }) => ({
+    content: [{ type: "text", text: `Tool echo: ${message}` }],
+  }));
+});
 
-export default handler;
+export { handler as GET, handler as POST, handler as DELETE };
