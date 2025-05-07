@@ -1,22 +1,12 @@
-import { z } from "zod";
-import { initializeMcpApiHandler } from "../lib/mcp-api-handler";
+const z = require("zod");
 
-const handler = initializeMcpApiHandler(
-  (server) => {
-    // Add more tools, resources, and prompts here
-    server.tool("echo", { message: z.string() }, async ({ message }) => ({
-      content: [{ type: "text", text: `Tool echo: ${message}` }],
-    }));
-  },
-  {
-    capabilities: {
-      tools: {
-        echo: {
-          description: "Echo a message",
-        },
-      },
-    },
-  }
-);
+// TODO this is exported from `next` but is generic to all isomorphic web API signatures
+const createMcpApiHandler = require("@vercel/mcp-adapter/next");
 
-export default handler;
+const handler = createMcpApiHandler((server) => {
+  server.tool("echo", { message: z.string() }, async ({ message }) => ({
+    content: [{ type: "text", text: `Tool echo: ${message}` }],
+  }));
+});
+
+export { handler as GET, handler as POST, handler as DELETE };
