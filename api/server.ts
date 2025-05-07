@@ -1,5 +1,7 @@
 import { z } from "zod";
-import createMcpApiHandler from "@vercel/mcp-adapter/next";
+
+// TODO this is exported from `next` but is generic to all isomorphic web API signatures
+import createMcpApiHandler from "@vercel/mcp-adapter";
 
 const handler = createMcpApiHandler((server) => {
   server.tool("echo", { message: z.string() }, async ({ message }) => ({
