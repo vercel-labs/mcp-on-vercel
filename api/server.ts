@@ -1,6 +1,5 @@
 import { createMcpHandler } from "@vercel/mcp-adapter";
 import { z } from "zod";
-export const runtime = "nodejs";
 
 const handler = createMcpHandler((server) => {
   server.tool("echo", { message: z.string() }, async ({ message }) => ({
