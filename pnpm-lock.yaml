@@ -5,24 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@modelcontextprotocol/sdk':
-    specifier: ^1.10.2
-    version: 1.10.2
-  '@swc/helpers':
-    specifier: ^0.5.17
-    version: 0.5.17
   '@vercel/mcp-adapter':
     specifier: ^0.2.1
     version: 0.2.1(@modelcontextprotocol/sdk@1.10.2)(next@15.3.2)(redis@4.7.0)
-  content-type:
-    specifier: ^1.0.5
-    version: 1.0.5
-  raw-body:
-    specifier: ^3.0.0
-    version: 3.0.0
-  redis:
-    specifier: ^4.7.0
-    version: 4.7.0
   zod:
     specifier: ^3.24.2
     version: 3.24.2
@@ -379,12 +364,6 @@ packages:
 
   /@swc/helpers@0.5.15:
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
-    dependencies:
-      tslib: 2.8.1
-    dev: false
-
-  /@swc/helpers@0.5.17:
-    resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
     dependencies:
       tslib: 2.8.1
     dev: false
