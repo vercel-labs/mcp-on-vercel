@@ -13,6 +13,11 @@ Update `api/server.ts` with your tools, prompts, and resources following the [MC
 - After enabling Fluid compute, open `vercel.json` and adjust max duration to 800 if you using a Vercel Pro or Enterprise account
 - [Deploy the MCP template](https://vercel.com/templates/other/model-context-protocol-mcp-with-vercel-functions)
 
+## Local dev
+
+- Run `vercel dev` for local development
+- Alternatively, integrate the system into the server framework of your choice.
+
 ## Sample Client
 
 `script/test-client.mjs` contains a sample client to try invocations.
