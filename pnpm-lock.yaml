@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@vercel/mcp-adapter':
-        specifier: ^0.4.0
-        version: 0.4.0(next@15.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
+        specifier: ^0.4.1
+        version: 0.4.1(next@15.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -227,8 +227,8 @@ packages:
   '@types/node@22.13.10':
     resolution: {integrity: sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==}
 
-  '@vercel/mcp-adapter@0.4.0':
-    resolution: {integrity: sha512-oPmjt0q5lDTS09ubeuV/ymMY6EQAzF7VOHCfZDfunQ3XlJXrEu6cUS/JRrZJzOKBYBjI15U0YnqOiretJnbmKw==}
+  '@vercel/mcp-adapter@0.4.1':
+    resolution: {integrity: sha512-/P1J1KGbQieNT9dKSt4Y+ZrLcnuf6W1cUMR0V+AcWRfQs7ilz64GaLVdpyUIoZFb45VHqRvTVEZ8YmQspEM/Kw==}
     peerDependencies:
       next: '>=13.0.0'
 
@@ -883,7 +883,7 @@ snapshots:
     dependencies:
       undici-types: 6.20.0
 
-  '@vercel/mcp-adapter@0.4.0(next@15.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))':
+  '@vercel/mcp-adapter@0.4.1(next@15.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))':
     dependencies:
       '@modelcontextprotocol/sdk': 1.10.2
       next: 15.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
