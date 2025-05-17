@@ -25,3 +25,4 @@ Update `api/server.ts` with your tools, prompts, and resources following the [MC
 ```sh
 node scripts/test-client.mjs https://mcp-on-vercel.vercel.app
 ```
+
