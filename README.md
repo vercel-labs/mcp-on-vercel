@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/vercel-labs-mcp-on-vercel-badge.png)](https://mseep.ai/app/vercel-labs-mcp-on-vercel)
+
 # Run an MCP Server on Vercel
 
 ## Usage
